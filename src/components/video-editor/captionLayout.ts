@@ -429,6 +429,28 @@ export function buildActiveCaptionLayout(options: {
 				: clamp(activeWordIndex - 1, 0, sourceWords.length - 1);
 	}
 	const maxRows = clamp(Math.round(options.settings.maxRows || 1), 1, 4);
+	const maxCharsPerLine = Math.round(options.settings.maxCharsPerLine || 0);
+
+	// Build forced-break positions from char limit
+	const charBreakSet = new Set<number>();
+	if (maxCharsPerLine > 0) {
+		let lineChars = 0;
+		for (let i = 0; i < sourceWords.length; i++) {
+			const word = sourceWords[i];
+			const wordLen = word.text.length;
+			if (i === 0) {
+				lineChars = wordLen;
+			} else {
+				const addedLen = (word.leadingSpace ? 1 : 0) + wordLen;
+				if (lineChars + addedLen > maxCharsPerLine) {
+					charBreakSet.add(i);
+					lineChars = wordLen;
+				} else {
+					lineChars += addedLen;
+				}
+			}
+		}
+	}
 
 	const words: CaptionWordLayout[] = sourceWords.map((word, index) => {
 		return {
@@ -436,7 +458,7 @@ export function buildActiveCaptionLayout(options: {
 			cueWordIndex: word.cueWordIndex,
 			text: word.text,
 			index,
-			forcedBreakBefore: word.forcedBreakBefore,
+			forcedBreakBefore: word.forcedBreakBefore || charBreakSet.has(index),
 			leadingSpace: word.leadingSpace,
 			startMs: word.startMs,
 			endMs: word.endMs,

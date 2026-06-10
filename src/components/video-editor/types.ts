@@ -552,11 +552,14 @@ export interface AutoCaptionSettings {
 	bottomOffset: number;
 	maxWidth: number;
 	maxRows: number;
+	maxCharsPerLine: number;
 	animationStyle: AutoCaptionAnimation;
 	boxRadius: number;
 	textColor: string;
 	inactiveTextColor: string;
 	backgroundOpacity: number;
+	textStrokeWidth: number;
+	textStrokeColor: string;
 }
 
 export const DEFAULT_AUTO_CAPTION_SETTINGS: AutoCaptionSettings = {
@@ -567,11 +570,14 @@ export const DEFAULT_AUTO_CAPTION_SETTINGS: AutoCaptionSettings = {
 	bottomOffset: 3,
 	maxWidth: 62,
 	maxRows: 1,
+	maxCharsPerLine: 0,
 	animationStyle: "fade",
 	boxRadius: 17.5,
 	textColor: "#FFFFFF",
 	inactiveTextColor: "#A3A3A3",
 	backgroundOpacity: 0.9,
+	textStrokeWidth: 0,
+	textStrokeColor: "#000000",
 };
 
 export type PlaybackSpeed = 0.25 | 0.5 | 0.75 | 1.25 | 1.5 | 1.75 | 2;

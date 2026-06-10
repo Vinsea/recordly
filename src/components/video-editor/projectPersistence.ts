@@ -796,6 +796,17 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 		backgroundOpacity: isFiniteNumber(rawAutoCaptionSettings.backgroundOpacity)
 			? clamp(rawAutoCaptionSettings.backgroundOpacity, 0, 1)
 			: DEFAULT_AUTO_CAPTION_SETTINGS.backgroundOpacity,
+		maxCharsPerLine: isFiniteNumber(rawAutoCaptionSettings.maxCharsPerLine)
+			? clamp(Math.round(rawAutoCaptionSettings.maxCharsPerLine), 0, 80)
+			: DEFAULT_AUTO_CAPTION_SETTINGS.maxCharsPerLine,
+		textStrokeWidth: isFiniteNumber(rawAutoCaptionSettings.textStrokeWidth)
+			? clamp(rawAutoCaptionSettings.textStrokeWidth, 0, 8)
+			: DEFAULT_AUTO_CAPTION_SETTINGS.textStrokeWidth,
+		textStrokeColor:
+			typeof rawAutoCaptionSettings.textStrokeColor === "string" &&
+			rawAutoCaptionSettings.textStrokeColor.trim()
+				? rawAutoCaptionSettings.textStrokeColor
+				: DEFAULT_AUTO_CAPTION_SETTINGS.textStrokeColor,
 	};
 
 	const rawCropX = isFiniteNumber(editor.cropRegion?.x)
