@@ -45,6 +45,7 @@ import { useI18n, useScopedT } from "../../contexts/I18nContext";
 import type { AppLocale } from "../../i18n/config";
 import { SUPPORTED_LOCALES } from "../../i18n/config";
 import { AnnotationSettingsPanel } from "./AnnotationSettingsPanel";
+import { updateCaptionCuesForEditedTarget } from "./captionEditing";
 import {
 	CURSOR_MOTION_PRESETS,
 	type CursorMotionPresetId,
@@ -807,6 +808,7 @@ interface SettingsPanelProps {
 	whisperModelDownloadProgress?: number;
 	isGeneratingCaptions?: boolean;
 	onAutoCaptionSettingsChange?: (settings: AutoCaptionSettings) => void;
+	onAutoCaptionsChange?: (cues: CaptionCue[]) => void;
 	onPickWhisperExecutable?: () => void;
 	onPickWhisperModel?: () => void;
 	onGenerateAutoCaptions?: () => void;
@@ -1242,6 +1244,7 @@ export function SettingsPanel({
 	whisperModelDownloadProgress = 0,
 	isGeneratingCaptions = false,
 	onAutoCaptionSettingsChange,
+	onAutoCaptionsChange,
 	onPickWhisperModel,
 	onGenerateAutoCaptions,
 	onClearAutoCaptions,
@@ -2772,6 +2775,17 @@ export function SettingsPanel({
 					parseInput={(text) => parseFloat(text)}
 				/>
 				<SliderControl
+					label={tSettings("captions.maxCharsPerLine", "Max chars/line")}
+					value={autoCaptionSettings.maxCharsPerLine ?? 0}
+					defaultValue={0}
+					min={0}
+					max={80}
+					step={1}
+					onChange={(value) => updateAutoCaptionSettings({ maxCharsPerLine: Math.round(value) })}
+					formatValue={(value) => Math.round(value) === 0 ? tSettings("captions.maxCharsOff", "Off") : `${Math.round(value)}`}
+					parseInput={(text) => parseFloat(text)}
+				/>
+				<SliderControl
 					label={tSettings("captions.bottomOffset", "Bottom offset")}
 					value={autoCaptionSettings.bottomOffset}
 					defaultValue={DEFAULT_AUTO_CAPTION_SETTINGS.bottomOffset}
@@ -2817,7 +2831,89 @@ export function SettingsPanel({
 					formatValue={(value) => `${Math.round(value * 100)}%`}
 					parseInput={(text) => parseFloat(text.replace(/%$/, "")) / 100}
 				/>
+				<SliderControl
+					label={tSettings("captions.textStrokeWidth", "Stroke width")}
+					value={autoCaptionSettings.textStrokeWidth ?? 0}
+					defaultValue={0}
+					min={0}
+					max={8}
+					step={0.5}
+					onChange={(value) => updateAutoCaptionSettings({ textStrokeWidth: value })}
+					formatValue={(value) => value === 0 ? tSettings("captions.maxCharsOff", "Off") : `${value}px`}
+					parseInput={(text) => parseFloat(text.replace(/px$/, ""))}
+				/>
+				{(autoCaptionSettings.textStrokeWidth ?? 0) > 0 && (
+					<label className="flex items-center justify-between rounded-lg bg-foreground/[0.03] px-2.5 py-2">
+						<span className="text-[10px] text-muted-foreground">
+							{tSettings("captions.textStrokeColor", "Stroke color")}
+						</span>
+						<input
+							type="color"
+							value={autoCaptionSettings.textStrokeColor ?? "#000000"}
+							onChange={(event) =>
+								updateAutoCaptionSettings({ textStrokeColor: event.target.value })
+							}
+							className="h-7 w-10 rounded border border-foreground/10 bg-transparent"
+						/>
+					</label>
+				)}
 				{renderExtensionPanelsForSections("captions")}
+				{autoCaptions.length > 0 && (
+					<div className="flex flex-col gap-1.5">
+						<div className="text-sm font-medium text-foreground">
+							{tSettings("captions.editCues", "Edit Captions")}
+						</div>
+						<div className="flex max-h-64 flex-col gap-1 overflow-y-auto">
+							{autoCaptions.map((cue) => (
+								<div key={cue.id} className="flex flex-col gap-0.5">
+									<div className="text-[9px] text-muted-foreground">
+										{`${Math.floor(cue.startMs / 1000 / 60).toString().padStart(2, "0")}:${(Math.floor(cue.startMs / 1000) % 60).toString().padStart(2, "0")}.${(Math.floor(cue.startMs / 10) % 100).toString().padStart(2, "0")}`}
+									</div>
+									<textarea
+										className="w-full resize-none rounded-md border border-foreground/10 bg-foreground/5 px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-blue-500"
+										rows={2}
+										defaultValue={cue.words ? cue.words.map((w) => w.text).join(" ") : cue.text}
+										onBlur={(e) => {
+											const newText = e.currentTarget.value.trim();
+											if (!newText) return;
+											const target = {
+												id: cue.id,
+												startMs: cue.startMs,
+												endMs: cue.endMs,
+												text: cue.text,
+												words: cue.words
+													? cue.words.map((w, i) => ({
+															cueId: cue.id,
+															cueWordIndex: i,
+															text: w.text,
+															startMs: w.startMs ?? cue.startMs,
+															endMs: w.endMs ?? cue.endMs,
+															leadingSpace: i > 0,
+														}))
+													: [
+															{
+																cueId: cue.id,
+																cueWordIndex: 0,
+																text: cue.text,
+																startMs: cue.startMs,
+																endMs: cue.endMs,
+																leadingSpace: false,
+															},
+														],
+											};
+											const updated = updateCaptionCuesForEditedTarget(
+												autoCaptions,
+												target,
+												newText,
+											);
+											onAutoCaptionsChange?.(updated);
+										}}
+									/>
+								</div>
+							))}
+						</div>
+					</div>
+				)}
 			</div>
 		</section>
 	);
