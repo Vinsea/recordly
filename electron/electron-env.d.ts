@@ -689,6 +689,7 @@ interface Window {
 			whisperExecutablePath?: string;
 			whisperModelPath: string;
 			language?: string;
+			extraAudioRegions?: Array<{ path: string; startMs: number; endMs: number }>;
 		}) => Promise<{
 			success: boolean;
 			cues?: AutoCaptionCue[];

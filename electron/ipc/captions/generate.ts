@@ -8,6 +8,7 @@ import { getFfmpegBinaryPath } from "../ffmpeg/binary";
 import { getBundledWhisperExecutableCandidates } from "../paths/binaries";
 import { parseWhisperJsonCues, parseSrtCues, shouldRetryWhisperWithoutJson } from "./parser";
 import { normalizeVideoSourcePath } from "../utils";
+import type { CaptionCuePayload } from "../types";
 import { resolveRecordingSession } from "../project/session";
 
 const execFileAsync = promisify(execFile);
@@ -160,6 +161,7 @@ export async function generateAutoCaptionsFromVideo(options: {
 	whisperExecutablePath?: string;
 	whisperModelPath: string;
 	language?: string;
+	extraAudioRegions?: Array<{ path: string; startMs: number; endMs: number }>;
 }) {
 	const ffmpegPath = getFfmpegBinaryPath();
 	const normalizedVideoPath = normalizeVideoSourcePath(options.videoPath);
@@ -172,6 +174,71 @@ export async function generateAutoCaptionsFromVideo(options: {
 	await ensureReadableFile(whisperExecutablePath, { executable: true });
 	await ensureReadableFile(whisperModelPath);
 
+	const language =
+		options.language && options.language.trim() ? options.language.trim() : "auto";
+
+	// If audio layers exist, transcribe each one separately with its time offset
+	const audioRegions = (options.extraAudioRegions ?? []).filter((r) => r.path);
+	if (audioRegions.length > 0) {
+		const allCues: CaptionCuePayload[] = [];
+		for (const region of audioRegions) {
+			const tempBase = path.join(
+				app.getPath("temp"),
+				`recordly-captions-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+			);
+			const wavPath = `${tempBase}.wav`;
+			const outputBase = `${tempBase}-whisper`;
+			const srtPath = `${outputBase}.srt`;
+			const jsonPath = `${outputBase}.json`;
+			try {
+				await execFileAsync(
+					ffmpegPath,
+					["-y", "-i", region.path, "-map", "0:a:0", "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", wavPath],
+					{ timeout: 5 * 60 * 1000, maxBuffer: 20 * 1024 * 1024 },
+				);
+				const whisperBaseArgs = ["-m", whisperModelPath, "-f", wavPath, "-osrt", "-of", outputBase, "-l", language, "-np"];
+				let jsonEnabled = true;
+				try {
+					await execFileAsync(whisperExecutablePath, [...whisperBaseArgs, "-ojf"], {
+						timeout: 30 * 60 * 1000,
+						maxBuffer: 20 * 1024 * 1024,
+					});
+				} catch (error) {
+					if (!shouldRetryWhisperWithoutJson(error)) throw error;
+					jsonEnabled = false;
+					await execFileAsync(whisperExecutablePath, whisperBaseArgs, {
+						timeout: 30 * 60 * 1000,
+						maxBuffer: 20 * 1024 * 1024,
+					});
+				}
+				const timedCues = jsonEnabled
+					? parseWhisperJsonCues(await fs.readFile(jsonPath, "utf-8"))
+					: [];
+				const cues = timedCues.length > 0 ? timedCues : parseSrtCues(await fs.readFile(srtPath, "utf-8"));
+				// Shift cue timestamps by the region's startMs
+				for (const cue of cues) {
+					allCues.push({
+						...cue,
+						startMs: cue.startMs + region.startMs,
+						endMs: cue.endMs + region.startMs,
+					});
+				}
+			} finally {
+				await Promise.allSettled([
+					fs.rm(wavPath, { force: true }),
+					fs.rm(srtPath, { force: true }),
+					fs.rm(jsonPath, { force: true }),
+				]);
+			}
+		}
+		if (allCues.length === 0) {
+			throw new Error("Whisper completed, but no caption cues were produced.");
+		}
+		allCues.sort((a, b) => a.startMs - b.startMs);
+		return { cues: allCues, audioSourceLabel: "audio layer" };
+	}
+
+	// Fallback: use the video/webcam audio source
 	const tempBase = path.join(
 		app.getPath("temp"),
 		`recordly-captions-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -188,8 +255,6 @@ export async function generateAutoCaptionsFromVideo(options: {
 			wavPath,
 		});
 
-		const language =
-			options.language && options.language.trim() ? options.language.trim() : "auto";
 		const whisperBaseArgs = [
 			"-m",
 			whisperModelPath,

@@ -717,6 +717,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		whisperExecutablePath?: string;
 		whisperModelPath: string;
 		language?: string;
+		extraAudioRegions?: Array<{ path: string; startMs: number; endMs: number }>;
 	}) => {
 		return ipcRenderer.invoke("generate-auto-captions", options);
 	},

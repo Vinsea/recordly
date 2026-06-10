@@ -184,6 +184,7 @@ export function registerCaptionHandlers() {
     whisperExecutablePath: string
     whisperModelPath: string
     language?: string
+    extraAudioRegions?: Array<{ path: string; startMs: number; endMs: number }>
   }) => {
     try {
       const result = await generateAutoCaptionsFromVideo(options)

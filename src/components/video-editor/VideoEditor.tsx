@@ -2753,6 +2753,9 @@ export default function VideoEditor() {
 				whisperExecutablePath: whisperExecutablePath ?? undefined,
 				whisperModelPath,
 				language: autoCaptionSettings.language,
+				extraAudioRegions: audioRegions
+					.filter((r) => r.audioPath)
+					.map((r) => ({ path: r.audioPath, startMs: r.startMs, endMs: r.endMs })),
 			});
 
 			if (!result.success || !result.cues) {
