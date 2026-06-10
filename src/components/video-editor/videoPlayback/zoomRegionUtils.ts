@@ -199,7 +199,7 @@ function getConnectedRegionHold(timeMs: number, connectedPairs: ConnectedRegionP
 	return null;
 }
 
-function getConnectedRegionTransition(connectedPairs: ConnectedRegionPair[], timeMs: number) {
+export function getConnectedRegionTransition(connectedPairs: ConnectedRegionPair[], timeMs: number) {
 	for (const pair of connectedPairs) {
 		const { currentRegion, nextRegion, transitionStart, transitionEnd } = pair;
 
