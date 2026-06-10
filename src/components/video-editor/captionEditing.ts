@@ -176,6 +176,60 @@ export function updateCaptionCuesForEditedTarget(
 	});
 }
 
+export function splitCuesByMaxChars(cues: CaptionCue[], maxCharsPerLine: number): CaptionCue[] {
+	const limit = Math.round(maxCharsPerLine);
+	if (limit <= 0) return cues;
+
+	const result: CaptionCue[] = [];
+	let idCounter = 0;
+
+	for (const cue of cues) {
+		const words = normalizeCaptionWords(cue);
+		if (words.length === 0) {
+			result.push(cue);
+			continue;
+		}
+
+		// Build groups of words that fit within maxCharsPerLine
+		const groups: CaptionCueWord[][] = [];
+		let current: CaptionCueWord[] = [];
+		let lineChars = 0;
+
+		for (const word of words) {
+			const addedLen = current.length === 0 ? word.text.length : 1 + word.text.length;
+			if (current.length > 0 && lineChars + addedLen > limit) {
+				groups.push(current);
+				current = [word];
+				lineChars = word.text.length;
+			} else {
+				current.push(word);
+				lineChars += addedLen;
+			}
+		}
+		if (current.length > 0) groups.push(current);
+
+		if (groups.length <= 1) {
+			result.push(cue);
+			continue;
+		}
+
+		for (const group of groups) {
+			const groupStartMs = group[0].startMs;
+			const groupEndMs = group[group.length - 1].endMs;
+			const text = captionWordsToText(group);
+			result.push({
+				id: `${cue.id}-split-${idCounter++}`,
+				startMs: groupStartMs,
+				endMs: groupEndMs,
+				text,
+				words: group.map((w, i) => ({ ...w, leadingSpace: i > 0 })),
+			});
+		}
+	}
+
+	return result;
+}
+
 function distributeEditedTokensAcrossCueSegments(
 	tokenCount: number,
 	segments: Array<{ cue: CaptionCue; startMs: number; endMs: number }>,

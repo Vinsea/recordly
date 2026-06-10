@@ -85,6 +85,7 @@ import {
 	getAspectRatioLabel,
 	getAspectRatioValue,
 } from "@/utils/aspectRatioUtils";
+import { splitCuesByMaxChars } from "./captionEditing";
 import { planClipSpeedChange } from "./clipSpeedChange";
 import { ExtensionIcon } from "./ExtensionIcon";
 import { calculateMp4ExportDimensions, calculateMp4SourceDimensions } from "./exportDimensions";
@@ -526,6 +527,7 @@ export default function VideoEditor() {
 	const [sourceAudioFallbackRefreshKey, setSourceAudioFallbackRefreshKey] = useState(0);
 	const [hasClipSourceAudio, setHasClipSourceAudio] = useState(false);
 	const [autoCaptions, setAutoCaptions] = useState<CaptionCue[]>([]);
+	const [autoCaptionsRaw, setAutoCaptionsRaw] = useState<CaptionCue[]>([]);
 	const [autoCaptionSettings, setAutoCaptionSettings] = useState<AutoCaptionSettings>(
 		DEFAULT_AUTO_CAPTION_SETTINGS,
 	);
@@ -1906,6 +1908,7 @@ export default function VideoEditor() {
 		setSpeedRegions(cloned.speedRegions);
 		setAnnotationRegions(cloned.annotationRegions);
 		setAudioRegions(cloned.audioRegions);
+		setAutoCaptionsRaw([]);
 		setAutoCaptions(cloned.autoCaptions);
 		setSelectedZoomId(cloned.selectedZoomId);
 		setSelectedClipId(cloned.selectedClipId);
@@ -2053,6 +2056,7 @@ export default function VideoEditor() {
 			setDefaultSourceAudioTrackSettings(
 				normalizedEditor.defaultSourceAudioTrackSettings ?? {},
 			);
+			setAutoCaptionsRaw([]);
 			setAutoCaptions(normalizedEditor.autoCaptions);
 			setAutoCaptionSettings(normalizedEditor.autoCaptionSettings);
 			setAspectRatio(normalizedEditor.aspectRatio);
@@ -2191,6 +2195,7 @@ export default function VideoEditor() {
 		setSourceAudioTrackSettingsByClip({});
 		setDefaultSourceAudioTrackSettings({});
 		setHasClipSourceAudio(false);
+		setAutoCaptionsRaw([]);
 		setAutoCaptions([]);
 		setAutoCaptionSettings((prev) => ({ ...prev, enabled: false }));
 		setSelectedZoomId(null);
@@ -2768,7 +2773,8 @@ export default function VideoEditor() {
 				return;
 			}
 
-			setAutoCaptions(result.cues);
+			setAutoCaptionsRaw(result.cues);
+			// setAutoCaptions is driven by the useEffect above via autoCaptionsRaw
 			setAutoCaptionSettings((prev) => ({ ...prev, enabled: true }));
 			toast.success(result.message || `Generated ${result.cues.length} captions`);
 		} catch (error) {
@@ -2787,7 +2793,14 @@ export default function VideoEditor() {
 		whisperModelPath,
 	]);
 
+	// Method A: re-split when maxCharsPerLine changes (uses raw whisper output as source)
+	useEffect(() => {
+		if (autoCaptionsRaw.length === 0) return;
+		setAutoCaptions(splitCuesByMaxChars(autoCaptionsRaw, autoCaptionSettings.maxCharsPerLine));
+	}, [autoCaptionsRaw, autoCaptionSettings.maxCharsPerLine]);
+
 	const handleClearAutoCaptions = useCallback(() => {
+		setAutoCaptionsRaw([]);
 		setAutoCaptions([]);
 		setAutoCaptionSettings((prev) => ({ ...prev, enabled: false }));
 	}, []);
