@@ -3032,6 +3032,12 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 																	? autoCaptionSettings.inactiveTextColor
 																	: autoCaptionSettings.textColor,
 																opacity: visualState.opacity,
+																...(autoCaptionSettings.textStrokeWidth > 0
+																	? {
+																			WebkitTextStroke: `${autoCaptionSettings.textStrokeWidth}px ${autoCaptionSettings.textStrokeColor}`,
+																			paintOrder: "stroke fill",
+																		}
+																	: {}),
 															}}
 														>
 															{`${word.leadingSpace ? " " : ""}${word.text}`}
