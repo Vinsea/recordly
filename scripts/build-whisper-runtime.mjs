@@ -253,6 +253,14 @@ async function ensureSourceTree() {
 }
 
 async function shouldSkipBuild(target) {
+	const binaryName = target.platform === "win32" ? "whisper-cli.exe" : "whisper-cli";
+	const binaryPath = path.join(target.outputDir, binaryName);
+
+	// If the binary is already present (manually bundled or pre-built), skip CMake build.
+	if (existsSync(binaryPath)) {
+		return true;
+	}
+
 	const manifestPath = path.join(target.outputDir, "whisper-runtime.json");
 	if (!existsSync(manifestPath)) {
 		return false;
@@ -260,8 +268,6 @@ async function shouldSkipBuild(target) {
 
 	try {
 		const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
-		const binaryName = target.platform === "win32" ? "whisper-cli.exe" : "whisper-cli";
-		const binaryPath = path.join(target.outputDir, binaryName);
 		return (
 			manifest.version === whisperVersion &&
 			manifest.arch === target.arch &&

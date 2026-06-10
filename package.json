@@ -16,6 +16,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite --config vite.config.ts",
+		"dev:viewer": "vite --config vite.viewer.config.ts",
+		"build:viewer": "vite build --config vite.viewer.config.ts",
 		"postinstall": "node scripts/postinstall.mjs",
 		"build": "npm run build:platform-native-helpers && tsc && vite build --config vite.config.ts && npm run normalize:electron-main-cjs && npm run smoke:electron-main-cjs && electron-builder",
 		"lint": "biome check .",
