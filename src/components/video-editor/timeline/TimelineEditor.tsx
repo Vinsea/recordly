@@ -66,6 +66,7 @@ export interface TimelineEditorProps {
 	onAudioAdded?: (span: Span, audioPath: string, trackIndex?: number) => void;
 	onAudioSpanChange?: (id: string, span: Span, trackIndex?: number) => void;
 	onAudioDelete?: (id: string) => void;
+	onAudioSplit?: (id: string, splitMs: number) => void;
 	selectedAudioId?: string | null;
 	onSelectAudio?: (id: string | null) => void;
 	videoPath?: string | null;
@@ -97,6 +98,7 @@ export interface TimelineEditorHandle {
 	addZoom: () => void;
 	suggestZooms: () => void;
 	splitClip: () => void;
+	splitAudio: () => void;
 	addAnnotation: (trackIndex?: number) => void;
 	addAudio: (trackIndex?: number) => Promise<void>;
 	keyframes: { id: string; time: number }[];
@@ -140,6 +142,7 @@ const TimelineEditor = forwardRef<TimelineEditorHandle, TimelineEditorProps>(
 			onAudioAdded,
 			onAudioSpanChange,
 			onAudioDelete,
+			onAudioSplit,
 			selectedAudioId,
 			onSelectAudio,
 			videoPath,
@@ -359,6 +362,7 @@ const TimelineEditor = forwardRef<TimelineEditorHandle, TimelineEditorProps>(
 			onAudioAdded,
 			onAudioSpanChange,
 			onAudioDelete,
+			onAudioSplit,
 			selectedAudioId,
 			onSelectAudio,
 			isMac,

@@ -3920,6 +3920,22 @@ export default function VideoEditor() {
 		[selectedAudioId],
 	);
 
+	const handleAudioSplit = useCallback(
+		(id: string, splitMs: number) => {
+			setAudioRegions((prev) => {
+				const region = prev.find((r) => r.id === id);
+				if (!region) return prev;
+				const leftId = `audio-${nextAudioIdRef.current++}`;
+				const rightId = `audio-${nextAudioIdRef.current++}`;
+				const left: AudioRegion = { ...region, id: leftId, endMs: splitMs };
+				const right: AudioRegion = { ...region, id: rightId, startMs: splitMs };
+				return prev.flatMap((r) => (r.id === id ? [left, right] : [r]));
+			});
+			setSelectedAudioId(null);
+		},
+		[],
+	);
+
 	const handleAudioNormalizeChange = useCallback(
 		(normalize: boolean) => {
 			if (!selectedAudioId) {
@@ -6219,6 +6235,16 @@ export default function VideoEditor() {
 								>
 									<Scissors className="w-4 h-4" />
 								</Button>
+								<Button
+									onClick={() => timelineRef.current?.splitAudio()}
+									variant="ghost"
+									size="icon"
+									disabled={!selectedAudioId}
+									className="h-7 w-7 rounded-full transition-all hover:bg-[#a855f7]/10 hover:text-[#a855f7] disabled:opacity-30 text-muted-foreground"
+									title={t("editor.toolbar.splitAudio", "Split audio at playhead")}
+								>
+									<Scissors className="w-4 h-4" />
+								</Button>
 							</div>
 							{/* Playback controls - centered */}
 							<div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
@@ -6370,6 +6396,7 @@ export default function VideoEditor() {
 						onAudioAdded={handleAudioAdded}
 						onAudioSpanChange={handleAudioSpanChange}
 						onAudioDelete={handleAudioDelete}
+						onAudioSplit={handleAudioSplit}
 						selectedAudioId={selectedAudioId}
 						onSelectAudio={handleSelectAudio}
 						annotationRegions={annotationRegions}

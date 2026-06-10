@@ -57,6 +57,7 @@ interface UseTimelineEditorRuntimeParams {
 	onAudioAdded?: (span: Span, audioPath: string, trackIndex?: number) => void;
 	onAudioSpanChange?: (id: string, span: Span, trackIndex?: number) => void;
 	onAudioDelete?: (id: string) => void;
+	onAudioSplit?: (id: string, splitMs: number) => void;
 	selectedAudioId?: string | null;
 	onSelectAudio?: (id: string | null) => void;
 	isMac: boolean;
@@ -101,6 +102,7 @@ export function useTimelineEditorRuntime({
 	onAudioAdded,
 	onAudioSpanChange,
 	onAudioDelete,
+	onAudioSplit,
 	selectedAudioId,
 	onSelectAudio,
 	isMac,
@@ -207,6 +209,14 @@ export function useTimelineEditorRuntime({
 		onClipSplit(currentTimeMs);
 	}, [videoDuration, totalMs, currentTimeMs, onClipSplit]);
 
+	const handleSplitAudio = useCallback(() => {
+		if (!selectedAudioId || !onAudioSplit) return;
+		const region = audioRegions.find((r) => r.id === selectedAudioId);
+		if (!region) return;
+		if (currentTimeMs <= region.startMs || currentTimeMs >= region.endMs) return;
+		onAudioSplit(selectedAudioId, currentTimeMs);
+	}, [selectedAudioId, audioRegions, currentTimeMs, onAudioSplit]);
+
 	const { handleAddAudio } = useTimelineAudioActions({
 		timeline: { videoDuration, totalMs, currentTimeMs },
 		regions: { audio: audioRegions },
@@ -263,6 +273,7 @@ export function useTimelineEditorRuntime({
 			addZoom: handleAddZoom,
 			suggestZooms: handleSuggestZooms,
 			splitClip: handleSplitClip,
+			splitAudio: handleSplitAudio,
 			addAnnotation: handleAddAnnotation,
 			addAudio: handleAddAudio,
 			keyframes,
@@ -273,6 +284,7 @@ export function useTimelineEditorRuntime({
 			handleAddZoom,
 			handleSuggestZooms,
 			handleSplitClip,
+			handleSplitAudio,
 			keyframes,
 		],
 	);
@@ -299,6 +311,7 @@ export function useTimelineEditorRuntime({
 		handleAddZoom,
 		handleSuggestZooms,
 		handleSplitClip,
+		handleSplitAudio,
 		handleAddAudio,
 		handleAddAnnotation,
 	};
