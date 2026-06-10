@@ -530,6 +530,7 @@ export default function VideoEditor() {
 		DEFAULT_AUTO_CAPTION_SETTINGS,
 	);
 	const [includeCaptionSidecar, setIncludeCaptionSidecar] = useState(true);
+	const [timelineHeight, setTimelineHeight] = useState(240);
 	const [whisperExecutablePath, setWhisperExecutablePath] = useState<string | null>(
 		initialEditorPreferences.whisperExecutablePath,
 	);
@@ -6029,6 +6030,7 @@ export default function VideoEditor() {
 								whisperModelDownloadProgress={whisperModelDownloadProgress}
 								isGeneratingCaptions={isGeneratingCaptions}
 								onAutoCaptionSettingsChange={setAutoCaptionSettings}
+								onAutoCaptionsChange={setAutoCaptions}
 								onPickWhisperExecutable={handlePickWhisperExecutable}
 								onPickWhisperModel={handlePickWhisperModel}
 								onGenerateAutoCaptions={handleGenerateAutoCaptions}
@@ -6316,10 +6318,28 @@ export default function VideoEditor() {
 				<div
 					className="flex-shrink-0 flex flex-col"
 					style={{
-						height: "15%",
+						height: timelineHeight,
 						minHeight: 160,
 					}}
 				>
+					<div
+						className="flex-shrink-0 h-1.5 cursor-ns-resize bg-transparent hover:bg-foreground/10 transition-colors"
+						onMouseDown={(e) => {
+							e.preventDefault();
+							const startY = e.clientY;
+							const startHeight = timelineHeight;
+							const onMove = (ev: MouseEvent) => {
+								const delta = startY - ev.clientY;
+								setTimelineHeight(Math.max(160, Math.min(600, startHeight + delta)));
+							};
+							const onUp = () => {
+								window.removeEventListener("mousemove", onMove);
+								window.removeEventListener("mouseup", onUp);
+							};
+							window.addEventListener("mousemove", onMove);
+							window.addEventListener("mouseup", onUp);
+						}}
+					/>
 					<TimelineEditor
 						ref={timelineRef}
 						videoDuration={timelineDuration}
