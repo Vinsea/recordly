@@ -53,6 +53,7 @@ import {
 	setHudOverlayRecordingActive,
 	showUpdateToastWindow,
 } from "./windows";
+import { loadProjectFromPath } from "./ipc/project/manager";
 
 const electronMainDir = path.dirname(fileURLToPath(import.meta.url));
 const IS_SMOKE_EXPORT = process.env.RECORDLY_SMOKE_EXPORT === "1";
@@ -869,9 +870,30 @@ app.on("activate", () => {
 	focusOrCreateMainWindow();
 });
 
-app.on("second-instance", () => {
-	focusOrCreateMainWindow();
+app.on("second-instance", (_event, argv) => {
+	const filePath = extractRecordlyFileFromArgv(argv);
+	if (filePath) {
+		openRecordlyFile(filePath);
+	} else {
+		focusOrCreateMainWindow();
+	}
 });
+
+function extractRecordlyFileFromArgv(argv: string[]): string | null {
+	// On Windows, the file path is passed as a CLI argument
+	const arg = argv.find((a) => a.endsWith(".recordly") || a.endsWith(".openscreen"));
+	return arg ?? null;
+}
+
+async function openRecordlyFile(filePath: string) {
+	const result = await loadProjectFromPath(filePath);
+	if (!result.success) {
+		console.error("[open-file] Failed to load project:", result.message);
+		focusOrCreateMainWindow();
+		return;
+	}
+	createEditorWindowWrapper();
+}
 
 // Register all IPC handlers when app is ready
 app.whenReady().then(async () => {
@@ -989,6 +1011,14 @@ app.whenReady().then(async () => {
 			);
 		}
 		createEditorWindowWrapper();
+		return;
+	}
+
+	// Handle file opened via double-click / open-with on first launch (Windows passes path in argv)
+	const fileArgPath = extractRecordlyFileFromArgv(process.argv);
+	if (fileArgPath) {
+		await openRecordlyFile(fileArgPath);
+		setupAutoUpdates(getUpdateDialogWindow, sendUpdateToastToWindows);
 		return;
 	}
 
