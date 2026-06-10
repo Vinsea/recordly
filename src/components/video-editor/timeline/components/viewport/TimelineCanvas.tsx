@@ -31,8 +31,6 @@ import glassStyles from "../../ItemGlass.module.css";
 import Row from "../../Row";
 import {
 	getTimelineContentMinHeightPx,
-	getTimelineViewportStretchFactor,
-	TIMELINE_AXIS_HEIGHT_PX,
 } from "../../timelineLayout";
 import TimelineAxis from "../axis/TimelineAxis";
 import ClipMarkerOverlay from "../overlays/ClipMarkerOverlay";
@@ -706,7 +704,6 @@ export default function TimelineCanvas({
 		return 2 + sourceAudioRows + annotationRowIds.size + audioRowIds.size;
 	}, [items, showSourceAudioTrack, sourceAudioTracks.length]);
 	const timelineContentMinHeightPx = getTimelineContentMinHeightPx(timelineRowCount);
-	const timelineViewportStretchFactor = getTimelineViewportStretchFactor(timelineRowCount);
 	const sideProperty = direction === "rtl" ? "right" : "left";
 	const {
 		canShowGhostPlayhead,
@@ -739,7 +736,7 @@ export default function TimelineCanvas({
 			ref={setRefs}
 			style={{
 				...style,
-				height: `max(100%, ${timelineContentMinHeightPx}px, calc(${TIMELINE_AXIS_HEIGHT_PX}px + (100% - ${TIMELINE_AXIS_HEIGHT_PX}px) * ${timelineViewportStretchFactor}))`,
+				height: `max(100%, ${timelineContentMinHeightPx}px)`,
 			}}
 			className="select-none bg-editor-bg relative cursor-pointer group flex flex-col"
 			onMouseDown={handleTimelineMouseDown}
