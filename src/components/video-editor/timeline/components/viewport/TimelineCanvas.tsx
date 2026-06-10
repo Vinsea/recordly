@@ -31,7 +31,6 @@ import glassStyles from "../../ItemGlass.module.css";
 import Row from "../../Row";
 import {
 	getTimelineContentMinHeightPx,
-	getTimelineRowsMinHeightPx,
 	getTimelineViewportStretchFactor,
 	TIMELINE_AXIS_HEIGHT_PX,
 } from "../../timelineLayout";
@@ -706,7 +705,6 @@ export default function TimelineCanvas({
 		const sourceAudioRows = showSourceAudioTrack ? sourceAudioTracks.length : 0;
 		return 2 + sourceAudioRows + annotationRowIds.size + audioRowIds.size;
 	}, [items, showSourceAudioTrack, sourceAudioTracks.length]);
-	const timelineRowsMinHeightPx = getTimelineRowsMinHeightPx(timelineRowCount);
 	const timelineContentMinHeightPx = getTimelineContentMinHeightPx(timelineRowCount);
 	const timelineViewportStretchFactor = getTimelineViewportStretchFactor(timelineRowCount);
 	const sideProperty = direction === "rtl" ? "right" : "left";
@@ -776,7 +774,6 @@ export default function TimelineCanvas({
 
 			<div
 				className="relative z-10 flex flex-1 min-h-0 flex-col"
-				style={{ minHeight: timelineRowsMinHeightPx }}
 			>
 				<TimelineCanvasRows
 					items={items}

@@ -3109,6 +3109,20 @@ export default function VideoEditor() {
 	}, [handleOpenProjectBrowser, handleSaveProject, handleSaveProjectAs]);
 
 	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if ((e.ctrlKey || e.metaKey) && e.key === "s" && !e.shiftKey) {
+				e.preventDefault();
+				void handleSaveProject();
+			} else if ((e.ctrlKey || e.metaKey) && e.key === "s" && e.shiftKey) {
+				e.preventDefault();
+				void handleSaveProjectAs();
+			}
+		};
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [handleSaveProject, handleSaveProjectAs]);
+
+	useEffect(() => {
 		let mounted = true;
 		let retryAttempts = 0;
 
@@ -5417,6 +5431,16 @@ export default function VideoEditor() {
 							<span className="shrink-0 text-xs font-medium tracking-tight text-muted-foreground/70">
 								.recordly
 							</span>
+						</button>
+					)}
+					{hasUnsavedChanges && currentProjectPath && (
+						<button
+							type="button"
+							onClick={() => void handleSaveProject()}
+							className="ml-1 rounded-md px-2 py-1 text-[11px] font-medium text-[#2563EB] transition-colors hover:bg-[#2563EB]/10"
+							title={t("editor.project.save", "Save (Ctrl+S)")}
+						>
+							{t("editor.project.save", "Save")}
 						</button>
 					)}
 				</div>
