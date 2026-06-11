@@ -3,13 +3,14 @@ import type {
 	AudioRegion,
 	AutoCaptionSettings,
 	CaptionCue,
+	CaptionRegion,
 	ClipRegion,
 	CropRegion,
 	CursorStyle,
 	CursorTelemetryPoint,
 	Padding,
-	SpeedRegion,
 	SourceAudioTrackSettings,
+	SpeedRegion,
 	TrimRegion,
 	WebcamOverlaySettings,
 	ZoomMotionBlurTuning,
@@ -74,7 +75,7 @@ interface VideoExporterConfig extends ExportConfig {
 	annotationRegions?: AnnotationRegion[];
 	autoCaptions?: CaptionCue[];
 	autoCaptionSettings?: AutoCaptionSettings;
-	cursorTelemetry?: CursorTelemetryPoint[];
+	captionRegions?: CaptionRegion[];
 	showCursor?: boolean;
 	cursorStyle?: CursorStyle;
 	cursorSize?: number;
@@ -246,6 +247,7 @@ export class VideoExporter {
 				annotationRegions: this.config.annotationRegions,
 				autoCaptions: this.config.autoCaptions,
 				autoCaptionSettings: this.config.autoCaptionSettings,
+				captionRegions: this.config.captionRegions,
 				speedRegions: this.config.speedRegions,
 				previewWidth: this.config.previewWidth,
 				previewHeight: this.config.previewHeight,

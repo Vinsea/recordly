@@ -5,8 +5,9 @@ import type {
 	AnnotationRegion,
 	AutoCaptionSettings,
 	CaptionCue,
-	CursorClickEffectStyle,
+	CaptionRegion,
 	CropRegion,
+	CursorClickEffectStyle,
 	CursorStyle,
 	CursorTelemetryPoint,
 	Padding,
@@ -19,6 +20,7 @@ import type {
 import {
 	BASE_PREVIEW_HEIGHT,
 	BASE_PREVIEW_WIDTH,
+	DEFAULT_AUTO_CAPTION_SETTINGS,
 	ZOOM_DEPTH_SCALES,
 } from "@/components/video-editor/types";
 import { DEFAULT_FOCUS } from "@/components/video-editor/videoPlayback/constants";
@@ -114,6 +116,7 @@ interface FrameRenderConfig {
 	annotationRegions?: AnnotationRegion[];
 	autoCaptions?: CaptionCue[];
 	autoCaptionSettings?: AutoCaptionSettings;
+	captionRegions?: CaptionRegion[];
 	speedRegions?: SpeedRegion[];
 	previewWidth?: number;
 	previewHeight?: number;
@@ -1566,6 +1569,28 @@ export class FrameRenderer {
 				);
 			}
 
+			if (this.config.captionRegions?.length && this.compositeCtx) {
+				for (const region of this.config.captionRegions) {
+					if (temporalSnapshot.timeMs >= region.startMs && temporalSnapshot.timeMs <= region.endMs) {
+						renderCaptions(
+							this.compositeCtx,
+							[{ id: region.id, startMs: region.startMs, endMs: region.endMs, text: region.text, words: region.words }],
+							{
+								...DEFAULT_AUTO_CAPTION_SETTINGS,
+								...region.style,
+								enabled: true,
+								language: "auto",
+								maxRows: 1,
+								maxCharsPerLine: 0,
+							},
+							this.config.width,
+							this.config.height,
+							temporalSnapshot.timeMs,
+						);
+					}
+				}
+			}
+
 			if (this.compositeCtx) {
 				const maskRect = this.layoutCache?.maskRect;
 				const hookParams = {
@@ -1748,6 +1773,28 @@ export class FrameRenderer {
 				this.config.height,
 				timeMs,
 			);
+		}
+
+		if (this.config.captionRegions?.length && this.compositeCtx) {
+			for (const region of this.config.captionRegions) {
+				if (timeMs >= region.startMs && timeMs <= region.endMs) {
+					renderCaptions(
+						this.compositeCtx,
+						[{ id: region.id, startMs: region.startMs, endMs: region.endMs, text: region.text, words: region.words }],
+						{
+							...DEFAULT_AUTO_CAPTION_SETTINGS,
+							...region.style,
+							enabled: true,
+							language: "auto",
+							maxRows: 1,
+							maxCharsPerLine: 0,
+						},
+						this.config.width,
+						this.config.height,
+						timeMs,
+					);
+				}
+			}
 		}
 
 		// Extension render hooks — run after all built-in rendering

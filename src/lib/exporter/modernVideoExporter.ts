@@ -3,6 +3,7 @@ import type {
 	AudioRegion,
 	AutoCaptionSettings,
 	CaptionCue,
+	CaptionRegion,
 	ClipRegion,
 	CropRegion,
 	CursorClickEffectStyle,
@@ -124,6 +125,7 @@ interface VideoExporterConfig extends ExportConfig {
 	annotationRegions?: AnnotationRegion[];
 	autoCaptions?: CaptionCue[];
 	autoCaptionSettings?: AutoCaptionSettings;
+	captionRegions?: CaptionRegion[];
 	cursorTelemetry?: CursorTelemetryPoint[];
 	showCursor?: boolean;
 	cursorStyle?: CursorStyle;
@@ -615,6 +617,7 @@ export class ModernVideoExporter {
 					annotationRegions: this.config.annotationRegions,
 					autoCaptions: this.config.autoCaptions,
 					autoCaptionSettings: this.config.autoCaptionSettings,
+					captionRegions: this.config.captionRegions,
 					speedRegions: this.config.speedRegions,
 					previewWidth: this.config.previewWidth,
 					previewHeight: this.config.previewHeight,
@@ -1553,7 +1556,7 @@ export class ModernVideoExporter {
 		if ((this.config.annotationRegions ?? []).length > 0) {
 			reasons.push("unsupported-annotation-overlay");
 		}
-		if ((this.config.autoCaptions ?? []).length > 0) {
+		if ((this.config.autoCaptions ?? []).length > 0 || (this.config.captionRegions ?? []).length > 0) {
 			reasons.push("unsupported-caption-overlay");
 		}
 

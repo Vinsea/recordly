@@ -4444,6 +4444,7 @@ export default function VideoEditor() {
 							resolvedWebcamVideoUrl ??
 							(webcam.sourcePath ? toFileUrl(webcam.sourcePath) : null),
 						annotationRegions,
+						captionRegions,
 						autoCaptions,
 						autoCaptionSettings,
 						zoomRegions: effectiveZoomRegions,
@@ -4627,6 +4628,7 @@ export default function VideoEditor() {
 							resolvedWebcamVideoUrl ??
 							(webcam.sourcePath ? toFileUrl(webcam.sourcePath) : null),
 						annotationRegions,
+						captionRegions,
 						autoCaptions,
 						autoCaptionSettings,
 						zoomRegions: effectiveZoomRegions,
@@ -4936,6 +4938,7 @@ export default function VideoEditor() {
 			webcam,
 			resolvedWebcamVideoUrl,
 			annotationRegions,
+			captionRegions,
 			autoCaptions,
 			autoCaptionSettings,
 			captionSidecarPayload,
