@@ -176,6 +176,60 @@ export function updateCaptionCuesForEditedTarget(
 	});
 }
 
+/** Split a single cue at a character offset within its display text.
+ * Returns [left, right] cues, or null if the split point is at the boundary. */
+export function splitCueAtChar(
+	cues: CaptionCue[],
+	cueId: string,
+	charOffset: number,
+): CaptionCue[] | null {
+	const idx = cues.findIndex((c) => c.id === cueId);
+	if (idx === -1) return null;
+
+	const cue = cues[idx];
+	const words = normalizeCaptionWords(cue);
+	if (words.length < 2) return null;
+
+	// Find the word index to split at based on char offset in display text
+	let charCount = 0;
+	let splitWordIndex = -1;
+	for (let i = 0; i < words.length; i++) {
+		const wordLen = (i > 0 ? 1 : 0) + words[i].text.length;
+		if (charCount + wordLen > charOffset && i > 0) {
+			splitWordIndex = i;
+			break;
+		}
+		charCount += wordLen;
+	}
+
+	// If offset is beyond all words or at the very start, use midpoint
+	if (splitWordIndex <= 0) {
+		splitWordIndex = Math.max(1, Math.floor(words.length / 2));
+	}
+
+	const leftWords = words.slice(0, splitWordIndex).map((w, i) => ({ ...w, leadingSpace: i > 0 }));
+	const rightWords = words.slice(splitWordIndex).map((w, i) => ({ ...w, leadingSpace: i > 0 }));
+
+	const leftCue: CaptionCue = {
+		id: `${cue.id}-L`,
+		startMs: leftWords[0].startMs,
+		endMs: leftWords[leftWords.length - 1].endMs,
+		text: captionWordsToText(leftWords),
+		words: leftWords,
+	};
+	const rightCue: CaptionCue = {
+		id: `${cue.id}-R`,
+		startMs: rightWords[0].startMs,
+		endMs: rightWords[rightWords.length - 1].endMs,
+		text: captionWordsToText(rightWords),
+		words: rightWords,
+	};
+
+	const result = [...cues];
+	result.splice(idx, 1, leftCue, rightCue);
+	return result;
+}
+
 const SENTENCE_END_RE = /[，。！？；,.!?;…]\s*$/;
 
 export function splitCuesByMaxChars(cues: CaptionCue[], maxCharsPerLine: number): CaptionCue[] {

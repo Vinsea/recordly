@@ -45,7 +45,7 @@ import { useI18n, useScopedT } from "../../contexts/I18nContext";
 import type { AppLocale } from "../../i18n/config";
 import { SUPPORTED_LOCALES } from "../../i18n/config";
 import { AnnotationSettingsPanel } from "./AnnotationSettingsPanel";
-import { updateCaptionCuesForEditedTarget } from "./captionEditing";
+import { splitCueAtChar, updateCaptionCuesForEditedTarget } from "./captionEditing";
 import {
 	CURSOR_MOTION_PRESETS,
 	type CursorMotionPresetId,
@@ -2864,13 +2864,17 @@ export function SettingsPanel({
 							{tSettings("captions.editCues", "Edit Captions")}
 						</div>
 						<div className="flex max-h-64 flex-col gap-1 overflow-y-auto">
-							{autoCaptions.map((cue) => (
+						{autoCaptions.map((cue) => {
+								let textareaRef: HTMLTextAreaElement | null = null;
+								return (
 								<div key={cue.id} className="flex flex-col gap-0.5">
 									<div className="text-[9px] text-muted-foreground">
 										{`${Math.floor(cue.startMs / 1000 / 60).toString().padStart(2, "0")}:${(Math.floor(cue.startMs / 1000) % 60).toString().padStart(2, "0")}.${(Math.floor(cue.startMs / 10) % 100).toString().padStart(2, "0")}`}
 									</div>
+									<div className="flex gap-1">
 									<textarea
-										className="w-full resize-none rounded-md border border-foreground/10 bg-foreground/5 px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-blue-500"
+										ref={(el) => { textareaRef = el; }}
+										className="flex-1 resize-none rounded-md border border-foreground/10 bg-foreground/5 px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-blue-500"
 										rows={2}
 										defaultValue={cue.words ? cue.words.map((w) => w.text).join(" ") : cue.text}
 										onBlur={(e) => {
@@ -2909,8 +2913,22 @@ export function SettingsPanel({
 											onAutoCaptionsChange?.(updated);
 										}}
 									/>
+									<button
+										type="button"
+										title="在光标处拆分字幕"
+										className="shrink-0 self-start mt-1 rounded px-1.5 py-1 text-xs text-muted-foreground hover:bg-foreground/10 hover:text-foreground transition-colors"
+										onClick={() => {
+											const charOffset = textareaRef?.selectionStart ?? 0;
+											const result = splitCueAtChar(autoCaptions, cue.id, charOffset);
+											if (result) onAutoCaptionsChange?.(result);
+										}}
+									>
+										✂
+									</button>
+									</div>
 								</div>
-							))}
+								);
+							})}
 						</div>
 					</div>
 				)}

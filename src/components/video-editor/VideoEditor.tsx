@@ -6083,7 +6083,10 @@ export default function VideoEditor() {
 								whisperModelDownloadProgress={whisperModelDownloadProgress}
 								isGeneratingCaptions={isGeneratingCaptions}
 								onAutoCaptionSettingsChange={setAutoCaptionSettings}
-								onAutoCaptionsChange={setAutoCaptions}
+								onAutoCaptionsChange={(cues) => {
+									setAutoCaptions(cues);
+									setAutoCaptionsRaw(cues);
+								}}
 								onPickWhisperExecutable={handlePickWhisperExecutable}
 								onPickWhisperModel={handlePickWhisperModel}
 								onGenerateAutoCaptions={handleGenerateAutoCaptions}
