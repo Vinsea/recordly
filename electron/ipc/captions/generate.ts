@@ -194,7 +194,6 @@ async function extractAndConcatClipAudio(options: {
 			if (durationMs <= 0) continue;
 
 			const segPath = path.join(tempDir, `seg-${i}-${Date.now()}.wav`);
-			segmentPaths.push(segPath);
 
 			await execFileAsync(
 				ffmpegPath,
@@ -210,6 +209,7 @@ async function extractAndConcatClipAudio(options: {
 				{ timeout: 5 * 60 * 1000, maxBuffer: 20 * 1024 * 1024 },
 			);
 
+			segmentPaths.push(segPath);
 			mapping.push({ sourceStartMs: clip.startMs, sourceEndMs: clip.endMs, concatOffsetMs });
 			concatOffsetMs += durationMs;
 		}
@@ -221,7 +221,7 @@ async function extractAndConcatClipAudio(options: {
 		} else {
 			// Build FFmpeg concat list file
 			const listPath = path.join(tempDir, `concat-list-${Date.now()}.txt`);
-			const listContent = segmentPaths.map((p) => `file '${p.replace(/'/g, "'\\''")}'`).join("\n");
+			const listContent = segmentPaths.map((p) => `file "${p.replace(/\\/g, "/")}"`).join("\n");
 			await fs.writeFile(listPath, listContent, "utf-8");
 
 			try {
