@@ -1,4 +1,4 @@
-import { MicrophoneIcon, MicrophoneSlashIcon, MinusIcon, PauseIcon, PlayIcon, SquareIcon, XIcon } from "@phosphor-icons/react";
+import { ArrowCounterClockwiseIcon, MicrophoneIcon, MicrophoneSlashIcon, MinusIcon, PauseIcon, PlayIcon, SquareIcon, XIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
 import { useScopedT } from "@/contexts/I18nContext";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ interface RecordingControlsProps {
 	onToggleMicrophone: () => void;
 	onPauseResume: () => void;
 	onStopRecording: () => void;
+	onRestartRecording: () => void;
 	onHideHud: () => void;
 	onCancelRecording: () => void;
 	formatTime: (seconds: number) => string;
@@ -24,6 +25,7 @@ export const RecordingControls = ({
 	onToggleMicrophone,
 	onPauseResume,
 	onStopRecording,
+	onRestartRecording,
 	onHideHud,
 	onCancelRecording,
 	formatTime,
@@ -110,6 +112,17 @@ export const RecordingControls = ({
 					variant="ghost"
 					size="icon"
 					iconSize="lg"
+					onClick={onRestartRecording}
+					title={t("recording.restart")}
+					aria-label={t("recording.restart")}
+				>
+					<ArrowCounterClockwiseIcon size={16} />
+				</Button>
+
+				<Button
+					variant="ghost"
+					size="icon"
+					iconSize="lg"
 					onClick={onHideHud}
 					title={t("recording.hideHud")}
 					aria-label={t("recording.hideHud")}
@@ -136,6 +149,7 @@ export const RecordingControls = ({
 		onToggleMicrophone,
 		onPauseResume,
 		onStopRecording,
+		onRestartRecording,
 		onHideHud,
 		onCancelRecording,
 		formatTime,

@@ -65,6 +65,7 @@ function LaunchWindowContent() {
 		pauseRecording,
 		resumeRecording,
 		cancelRecording,
+		restartRecording,
 		microphoneEnabled,
 		setMicrophoneEnabled,
 		microphoneDeviceId,
@@ -206,6 +207,7 @@ function LaunchWindowContent() {
 			onStopRecording={toggleRecording}
 			onHideHud={() => window.electronAPI?.hudOverlayHide?.()}
 			onCancelRecording={cancelRecording}
+			onRestartRecording={restartRecording}
 			formatTime={formatTime}
 		/>
 	);

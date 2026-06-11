@@ -135,6 +135,7 @@ type UseScreenRecorderReturn = {
 	pauseRecording: () => void;
 	resumeRecording: () => void;
 	cancelRecording: () => void;
+	restartRecording: () => void;
 	preparePermissions: (options?: { startup?: boolean }) => Promise<boolean>;
 	isMacOS: boolean;
 	microphoneEnabled: boolean;
@@ -2110,6 +2111,10 @@ export function useScreenRecorder(): UseScreenRecorderReturn {
 		pauseRecording,
 		resumeRecording,
 		cancelRecording,
+		restartRecording: () => {
+			cancelRecording();
+			void toggleRecording();
+		},
 		preparePermissions,
 		isMacOS,
 		microphoneEnabled,
