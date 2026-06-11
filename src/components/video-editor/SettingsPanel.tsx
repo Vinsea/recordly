@@ -47,6 +47,7 @@ import type { AppLocale } from "../../i18n/config";
 import { SUPPORTED_LOCALES } from "../../i18n/config";
 import { AddCustomFontDialog } from "./AddCustomFontDialog";
 import { AnnotationSettingsPanel, FONT_FAMILY_VALUES } from "./AnnotationSettingsPanel";
+import { CaptionRegionSettingsPanel } from "./CaptionRegionSettingsPanel";
 import { splitCueAtChar, updateCaptionCuesForEditedTarget } from "./captionEditing";
 import {
 	CURSOR_MOTION_PRESETS,
@@ -62,6 +63,8 @@ import type {
 	AutoCaptionAnimation,
 	AutoCaptionSettings,
 	CaptionCue,
+	CaptionRegion,
+	CaptionRegionStyle,
 	CropRegion,
 	CursorClickEffectStyle,
 	CursorStyle,
@@ -840,6 +843,13 @@ interface SettingsPanelProps {
 	onPickWhisperModel?: () => void;
 	onGenerateAutoCaptions?: () => void;
 	onClearAutoCaptions?: () => void;
+	captionRegions?: CaptionRegion[];
+	selectedCaptionRegionId?: string | null;
+	onConvertCaptionsToTrack?: () => void;
+	onCaptionRegionStyleChange?: (id: string, style: Partial<CaptionRegionStyle>) => void;
+	onCaptionRegionTextChange?: (id: string, text: string) => void;
+	onCaptionRegionDelete?: (id: string) => void;
+	onApplyCaptionStyleToAll?: (id: string) => void;
 	onDownloadWhisperSmallModel?: () => void;
 	onDeleteWhisperSmallModel?: () => void;
 	nativeCaptureUnavailableSession?: boolean;
@@ -1277,6 +1287,13 @@ export function SettingsPanel({
 	onPickWhisperModel,
 	onGenerateAutoCaptions,
 	onClearAutoCaptions,
+	captionRegions = [],
+	selectedCaptionRegionId,
+	onConvertCaptionsToTrack,
+	onCaptionRegionStyleChange,
+	onCaptionRegionTextChange,
+	onCaptionRegionDelete,
+	onApplyCaptionStyleToAll,
 	onDownloadWhisperSmallModel,
 	onDeleteWhisperSmallModel,
 	nativeCaptureUnavailableSession = false,
@@ -2318,6 +2335,29 @@ export function SettingsPanel({
 		</div>
 	);
 
+	// If a caption region is selected, show caption region settings instead
+	const selectedCaptionRegion = selectedCaptionRegionId
+		? captionRegions.find((r) => r.id === selectedCaptionRegionId)
+		: null;
+
+	if (
+		selectedCaptionRegion &&
+		onCaptionRegionStyleChange &&
+		onCaptionRegionTextChange &&
+		onCaptionRegionDelete &&
+		onApplyCaptionStyleToAll
+	) {
+		return (
+			<CaptionRegionSettingsPanel
+				region={selectedCaptionRegion}
+				onStyleChange={onCaptionRegionStyleChange}
+				onTextChange={onCaptionRegionTextChange}
+				onDelete={onCaptionRegionDelete}
+				onApplyToAll={onApplyCaptionStyleToAll}
+			/>
+		);
+	}
+
 	// If an annotation is selected, show annotation settings instead
 	if (
 		!isBackgroundPanel &&
@@ -2953,6 +2993,16 @@ export function SettingsPanel({
 					</label>
 				)}
 				{renderExtensionPanelsForSections("captions")}
+				{autoCaptions.length > 0 && (
+					<Button
+						variant="outline"
+						size="sm"
+						className="w-full text-xs gap-1.5"
+						onClick={onConvertCaptionsToTrack}
+					>
+						{tSettings("captions.convertToTrack", "Convert to Timeline Track")}
+					</Button>
+				)}
 				{autoCaptions.length > 0 && (
 					<div className="flex flex-col gap-1.5">
 						<div className="text-sm font-medium text-foreground">
