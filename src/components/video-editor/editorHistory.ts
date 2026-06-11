@@ -14,6 +14,7 @@ export type EditorHistorySnapshot = {
 	annotationRegions: AnnotationRegion[];
 	audioRegions: AudioRegion[];
 	autoCaptions: CaptionCue[];
+	autoCaptionsRaw: CaptionCue[];
 	selectedZoomId: string | null;
 	selectedClipId: string | null;
 	selectedAnnotationId: string | null;

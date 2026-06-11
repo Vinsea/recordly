@@ -138,6 +138,7 @@ export interface ProjectEditorState {
 	annotationRegions: AnnotationRegion[];
 	audioRegions: AudioRegion[];
 	autoCaptions: CaptionCue[];
+	autoCaptionsRaw: CaptionCue[];
 	autoCaptionSettings: AutoCaptionSettings;
 	webcam: WebcamOverlaySettings;
 	aspectRatio: AspectRatio;
@@ -750,6 +751,24 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 				.filter((cue) => cue.text.length > 0)
 		: [];
 
+	const normalizedAutoCaptionsRaw: CaptionCue[] = Array.isArray(
+		(editor as Partial<ProjectEditorState>).autoCaptionsRaw,
+	)
+		? ((editor as Partial<ProjectEditorState>).autoCaptionsRaw as CaptionCue[])
+				.filter((cue): cue is CaptionCue => Boolean(cue && typeof cue.id === "string"))
+				.map((cue) => {
+					const rawStart = isFiniteNumber(cue.startMs) ? Math.round(cue.startMs) : 0;
+					const rawEnd = isFiniteNumber(cue.endMs) ? Math.round(cue.endMs) : rawStart;
+					return {
+						id: cue.id,
+						startMs: rawStart,
+						endMs: Math.max(rawStart, rawEnd),
+						text: typeof cue.text === "string" ? cue.text : "",
+						words: Array.isArray(cue.words) ? cue.words : undefined,
+					} satisfies CaptionCue;
+				})
+		: [];
+
 	const rawAutoCaptionSettings: Partial<AutoCaptionSettings> =
 		editor.autoCaptionSettings && typeof editor.autoCaptionSettings === "object"
 			? (editor.autoCaptionSettings as Partial<AutoCaptionSettings>)
@@ -764,7 +783,11 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 			rawAutoCaptionSettings.language.trim()
 				? rawAutoCaptionSettings.language.trim()
 				: DEFAULT_AUTO_CAPTION_SETTINGS.language,
-		fontFamily: getDefaultCaptionFontFamily(),
+		fontFamily:
+			typeof rawAutoCaptionSettings.fontFamily === "string" &&
+			rawAutoCaptionSettings.fontFamily.trim()
+				? rawAutoCaptionSettings.fontFamily.trim()
+				: getDefaultCaptionFontFamily(),
 		fontSize: isFiniteNumber(rawAutoCaptionSettings.fontSize)
 			? clamp(rawAutoCaptionSettings.fontSize, 16, 72)
 			: DEFAULT_AUTO_CAPTION_SETTINGS.fontSize,
@@ -998,6 +1021,7 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 		annotationRegions: normalizedAnnotationRegions,
 		audioRegions: normalizedAudioRegions,
 		autoCaptions: normalizedAutoCaptions,
+		autoCaptionsRaw: normalizedAutoCaptionsRaw,
 		autoCaptionSettings: normalizedAutoCaptionSettings,
 		webcam: {
 			enabled:

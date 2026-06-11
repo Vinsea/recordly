@@ -1884,6 +1884,7 @@ export default function VideoEditor() {
 			annotationRegions,
 			audioRegions,
 			autoCaptions,
+			autoCaptionsRaw,
 			selectedZoomId,
 			selectedClipId,
 			selectedAnnotationId,
@@ -1896,6 +1897,7 @@ export default function VideoEditor() {
 		annotationRegions,
 		audioRegions,
 		autoCaptions,
+		autoCaptionsRaw,
 		selectedZoomId,
 		selectedClipId,
 		selectedAnnotationId,
@@ -1910,7 +1912,7 @@ export default function VideoEditor() {
 		setSpeedRegions(cloned.speedRegions);
 		setAnnotationRegions(cloned.annotationRegions);
 		setAudioRegions(cloned.audioRegions);
-		setAutoCaptionsRaw([]);
+		setAutoCaptionsRaw(cloned.autoCaptionsRaw ?? []);
 		setAutoCaptions(cloned.autoCaptions);
 		setSelectedZoomId(cloned.selectedZoomId);
 		setSelectedClipId(cloned.selectedClipId);
@@ -2058,7 +2060,7 @@ export default function VideoEditor() {
 			setDefaultSourceAudioTrackSettings(
 				normalizedEditor.defaultSourceAudioTrackSettings ?? {},
 			);
-			setAutoCaptionsRaw([]);
+			setAutoCaptionsRaw(normalizedEditor.autoCaptionsRaw ?? []);
 			setAutoCaptions(normalizedEditor.autoCaptions);
 			setAutoCaptionSettings(normalizedEditor.autoCaptionSettings);
 			setAspectRatio(normalizedEditor.aspectRatio);
