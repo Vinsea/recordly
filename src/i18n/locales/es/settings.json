@@ -66,7 +66,7 @@
 		"connectedZoomDuration": "Duración entre zooms conectados",
 		"connectedZoomEasing": "Curva del paneo conectado",
 		"zoomEasingOptions": {
-			"recordly": "Recordly",
+			"recordly": "Vecord",
 			"glide": "Glide",
 			"smooth": "Suave",
 			"snappy": "Rápida",
@@ -141,7 +141,11 @@
 		"maxWidth": "Ancho máximo",
 		"boxRadius": "Radio del contenedor",
 		"backgroundOpacity": "Opacidad del fondo",
-		"textColor": "Color del texto"
+		"textColor": "Color del texto",
+		"convertToTrack": "Convertir a pista de línea de tiempo",
+		"applyToAll": "Aplicar estilo a todos los subtítulos",
+		"captionText": "Texto del subtítulo",
+		"deleteCaption": "Eliminar subtítulo"
 	},
 	"crop": {
 		"title": "Recortar video",

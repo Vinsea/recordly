@@ -66,7 +66,7 @@
 		"connectedZoomDuration": "Verbonden zoomduur",
 		"connectedZoomEasing": "Verbonden pancurve",
 		"zoomEasingOptions": {
-			"recordly": "Recordly",
+			"recordly": "Vecord",
 			"glide": "Glijden",
 			"smooth": "Vloeiend",
 			"snappy": "Pittig",
@@ -141,7 +141,11 @@
 		"maxWidth": "Maximale breedte",
 		"boxRadius": "Vakstraal",
 		"backgroundOpacity": "Achtergrond-dekking",
-		"textColor": "Tekstkleur"
+		"textColor": "Tekstkleur",
+		"convertToTrack": "Converteren naar tijdlijntrack",
+		"applyToAll": "Stijl toepassen op alle ondertitels",
+		"captionText": "Ondertiteltekst",
+		"deleteCaption": "Ondertitel verwijderen"
 	},
 	"crop": {
 		"title": "Video bijsnijden",

@@ -187,7 +187,11 @@
 		"maxWidth": "Max Width",
 		"boxRadius": "Box Radius",
 		"backgroundOpacity": "Background Opacity",
-		"textColor": "Text Color"
+		"textColor": "Text Color",
+		"convertToTrack": "Convert to Timeline Track",
+		"applyToAll": "Apply style to all captions",
+		"captionText": "Caption text",
+		"deleteCaption": "Delete Caption"
 	},
 	"crop": {
 		"title": "Crop Video",

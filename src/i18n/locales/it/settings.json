@@ -85,7 +85,7 @@
 		"connectedZoomDuration": "Durata zoom connessi",
 		"connectedZoomEasing": "Curva pan connesso",
 		"zoomEasingOptions": {
-			"recordly": "Recordly",
+			"recordly": "Vecord",
 			"glide": "Glide",
 			"smooth": "Fluido",
 			"snappy": "Rapido",
@@ -161,7 +161,11 @@
 		"maxWidth": "Larghezza massima",
 		"boxRadius": "Raggio riquadro",
 		"backgroundOpacity": "Opacità sfondo",
-		"textColor": "Colore testo"
+		"textColor": "Colore testo",
+		"convertToTrack": "Converti in traccia timeline",
+		"applyToAll": "Applica stile a tutti i sottotitoli",
+		"captionText": "Testo del sottotitolo",
+		"deleteCaption": "Elimina sottotitolo"
 	},
 	"crop": {
 		"title": "Ritaglia video",

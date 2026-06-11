@@ -85,7 +85,7 @@
 		"connectedZoomDuration": "连接缩放时长",
 		"connectedZoomEasing": "连接平移曲线",
 		"zoomEasingOptions": {
-			"recordly": "Recordly",
+			"recordly": "Vecord",
 			"glide": "滑行",
 			"smooth": "平滑",
 			"snappy": "利落",
@@ -187,7 +187,11 @@
 		"maxWidth": "最大宽度",
 		"boxRadius": "字幕框圆角",
 		"backgroundOpacity": "背景透明度",
-		"textColor": "文字颜色"
+		"textColor": "文字颜色",
+		"convertToTrack": "转换为时间轴轨道",
+		"applyToAll": "应用样式到所有字幕",
+		"captionText": "字幕文本",
+		"deleteCaption": "删除字幕"
 	},
 	"crop": {
 		"title": "裁剪视频",

@@ -85,7 +85,7 @@
 		"connectedZoomDuration": "Длительность интервала",
 		"connectedZoomEasing": "Кривая панорамирования",
 		"zoomEasingOptions": {
-			"recordly": "Recordly",
+			"recordly": "Vecord",
 			"glide": "Плавно",
 			"smooth": "Мягко",
 			"snappy": "Резко",
@@ -161,7 +161,11 @@
 		"maxWidth": "Максимальная ширина",
 		"boxRadius": "Скругление",
 		"backgroundOpacity": "Прозрачность фона",
-		"textColor": "Цвет текста"
+		"textColor": "Цвет текста",
+		"convertToTrack": "Преобразовать в дорожку временной шкалы",
+		"applyToAll": "Применить стиль ко всем субтитрам",
+		"captionText": "Текст субтитра",
+		"deleteCaption": "Удалить субтитр"
 	},
 	"crop": {
 		"title": "Обрезка видео",
