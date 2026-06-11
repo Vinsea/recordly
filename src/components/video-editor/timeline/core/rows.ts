@@ -3,6 +3,8 @@ import {
 	ANNOTATION_ROW_PREFIX,
 	AUDIO_ROW_ID,
 	AUDIO_ROW_PREFIX,
+	CAPTION_ROW_ID,
+	CAPTION_ROW_PREFIX,
 } from "./constants";
 
 export function getAnnotationTrackRowId(trackIndex: number) {
@@ -36,5 +38,21 @@ export function getAudioTrackIndex(rowId: string) {
 	}
 
 	const parsed = Number.parseInt(rowId.slice(AUDIO_ROW_PREFIX.length), 10);
+	return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+}
+
+export function getCaptionTrackRowId(trackIndex: number) {
+	return `${CAPTION_ROW_PREFIX}${Math.max(0, Math.floor(trackIndex))}`;
+}
+
+export function isCaptionTrackRowId(rowId: string) {
+	return rowId === CAPTION_ROW_ID || rowId.startsWith(CAPTION_ROW_PREFIX);
+}
+
+export function getCaptionTrackIndex(rowId: string) {
+	if (rowId === CAPTION_ROW_ID) {
+		return 0;
+	}
+	const parsed = Number.parseInt(rowId.slice(CAPTION_ROW_PREFIX.length), 10);
 	return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
 }
