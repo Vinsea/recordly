@@ -2895,6 +2895,16 @@ export default function VideoEditor() {
 		setSelectedCaptionRegionId(id);
 	}, []);
 
+	// Caption track handlers are implemented but not yet wired to the timeline UI.
+	// Referenced here to satisfy noUnusedLocals until the UI is complete.
+	void handleConvertCaptionsToTrack;
+	void handleCaptionRegionSpanChange;
+	void handleCaptionRegionStyleChange;
+	void handleCaptionRegionTextChange;
+	void handleCaptionRegionDelete;
+	void handleApplyCaptionStyleToAll;
+	void handleSelectCaptionRegion;
+
 	const saveProject = useCallback(
 		async (forceSaveAs: boolean, options?: SaveProjectOptions) => {
 			clearPendingProjectAutosave();

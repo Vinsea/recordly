@@ -28,6 +28,7 @@ import {
 	type AutoCaptionSettings,
 	type CaptionCue,
 	type CaptionCueWord,
+	type CaptionRegion,
 	type ClipRegion,
 	type CropRegion,
 	type CursorClickEffectStyle,
@@ -139,6 +140,7 @@ export interface ProjectEditorState {
 	audioRegions: AudioRegion[];
 	autoCaptions: CaptionCue[];
 	autoCaptionsRaw: CaptionCue[];
+	captionRegions: CaptionRegion[];
 	autoCaptionSettings: AutoCaptionSettings;
 	webcam: WebcamOverlaySettings;
 	aspectRatio: AspectRatio;
@@ -1027,6 +1029,7 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 		audioRegions: normalizedAudioRegions,
 		autoCaptions: normalizedAutoCaptions,
 		autoCaptionsRaw: normalizedAutoCaptionsRaw,
+		captionRegions: [],
 		autoCaptionSettings: normalizedAutoCaptionSettings,
 		webcam: {
 			enabled:
