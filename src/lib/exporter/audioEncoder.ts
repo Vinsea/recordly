@@ -1036,10 +1036,14 @@ export class AudioProcessor {
 		gainNode.gain.value = Math.max(0, Math.min(1, region.volume * normalizeGain));
 		gainNode.connect(ctx.destination);
 
+		const regionSpeed = typeof region.speed === "number" && region.speed > 0 ? region.speed : 1;
 		const source = ctx.createBufferSource();
 		source.buffer = buffer;
+		source.playbackRate.value = regionSpeed;
+		// Compensate pitch so it stays pitch-preserved (detune in cents: -1200*log2(speed))
+		source.detune.value = -1200 * Math.log2(regionSpeed);
 		source.connect(gainNode);
-		source.start(localStartSec, bufferOffsetSec, duration);
+		source.start(localStartSec, bufferOffsetSec, duration / regionSpeed);
 	}
 
 	// Feed a rendered AudioBuffer chunk to an AudioEncoder with a timestamp offset.

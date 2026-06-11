@@ -333,12 +333,14 @@ export function useAudioPreviewSync({
 
       if (isPlaying && isInRegion) {
         enablePitchPreservingPlayback(audio);
-        const audioOffset = (currentTimeMs - startMs) / 1000;
+        const regionSpeed = track.speed ?? 1;
+        const combinedRate = targetPlaybackRate * regionSpeed;
+        const audioOffset = (currentTimeMs - startMs) / 1000 / regionSpeed;
         if (Math.abs(audio.currentTime - audioOffset) > 0.2) {
           audio.currentTime = audioOffset;
         }
         const syncedPlaybackRate = getMediaSyncPlaybackRate({
-          basePlaybackRate: targetPlaybackRate,
+          basePlaybackRate: combinedRate,
           currentTime: audio.currentTime,
           targetTime: audioOffset,
         });

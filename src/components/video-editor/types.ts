@@ -523,6 +523,7 @@ export interface AudioRegion {
 	endMs: number;
 	audioPath: string;
 	volume: number;
+	speed?: number;
 	normalize?: boolean;
 	trackIndex?: number;
 }

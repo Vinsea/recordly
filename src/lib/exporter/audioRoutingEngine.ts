@@ -13,6 +13,7 @@ export interface ResolvedAudioTrack {
 		startDelayMs: number;
 	};
 	gain: number;
+	speed: number;
 	timelineBinding: {
 		startMs: number;
 		endMs: number;
@@ -78,6 +79,7 @@ export function buildResolvedAudioPlan(input: {
 			startDelayMs: 0,
 		},
 		gain: clampGain(region.volume * (region.normalize ? SOURCE_AUDIO_NORMALIZE_GAIN : 1), 1),
+		speed: typeof region.speed === "number" && region.speed > 0 ? region.speed : 1,
 		timelineBinding: {
 			startMs: Math.max(0, region.startMs),
 			endMs: Math.max(0, region.endMs),
@@ -94,6 +96,7 @@ export function buildResolvedAudioPlan(input: {
 				startDelayMs: 0,
 			},
 			gain: clampGain(input.sourceTrackGainById?.[trackId] ?? 1, 2),
+			speed: 1,
 			timelineBinding: {
 				startMs: 0,
 				endMs: Number.POSITIVE_INFINITY,
@@ -110,6 +113,7 @@ export function buildResolvedAudioPlan(input: {
 				startDelayMs: 0,
 			},
 			gain: clampGain(input.embeddedGain ?? input.sourceTrackGainById?.mixed ?? 1, 2),
+			speed: 1,
 			timelineBinding: {
 				startMs: 0,
 				endMs: Number.POSITIVE_INFINITY,

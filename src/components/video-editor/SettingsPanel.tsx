@@ -696,8 +696,10 @@ interface SettingsPanelProps {
 	onClipDelete?: (id: string) => void;
 	selectedAudioId?: string | null;
 	selectedAudioVolume?: number | null;
+	selectedAudioSpeed?: number | null;
 	selectedAudioNormalize?: boolean | null;
 	onAudioVolumeChange?: (volume: number) => void;
+	onAudioSpeedChange?: (speed: number) => void;
 	onAudioNormalizeChange?: (normalize: boolean) => void;
 	onAudioDelete?: (id: string) => void;
 	shadowIntensity?: number;
@@ -1151,8 +1153,10 @@ export function SettingsPanel({
 	onClipDelete,
 	selectedAudioId,
 	selectedAudioVolume,
+	selectedAudioSpeed,
 	selectedAudioNormalize,
 	onAudioVolumeChange,
+	onAudioSpeedChange,
 	onAudioNormalizeChange,
 	onAudioDelete,
 	shadowIntensity = 0.67,
@@ -3477,6 +3481,7 @@ export function SettingsPanel({
 						type="button"
 						onClick={() => {
 							onAudioVolumeChange?.(1);
+							onAudioSpeedChange?.(1);
 							onAudioNormalizeChange?.(false);
 						}}
 						className="text-[10px] text-[#2563EB] transition-opacity hover:opacity-80"
@@ -3494,6 +3499,17 @@ export function SettingsPanel({
 					onChange={(v) => onAudioVolumeChange?.(v)}
 					formatValue={(v) => `${Math.round(v * 100)}%`}
 					parseInput={(text) => parseFloat(text.replace(/%$/, "")) / 100}
+				/>
+				<SliderControl
+					label={tSettings("audio.speed", "Speed")}
+					value={selectedAudioSpeed ?? 1}
+					defaultValue={1}
+					min={0.25}
+					max={4}
+					step={0.05}
+					onChange={(v) => onAudioSpeedChange?.(Math.round(v * 20) / 20)}
+					formatValue={(v) => `${v.toFixed(2)}×`}
+					parseInput={(text) => parseFloat(text.replace(/[×x]$/, ""))}
 				/>
 				<div className="flex items-center justify-between rounded-lg bg-foreground/[0.03] px-2.5 py-1.5">
 					<span className="text-[10px] text-muted-foreground">

@@ -3937,6 +3937,19 @@ export default function VideoEditor() {
 		[selectedAudioId],
 	);
 
+	const handleAudioSpeedChange = useCallback(
+		(speed: number) => {
+			if (!selectedAudioId || !Number.isFinite(speed)) return;
+			const nextSpeed = Math.max(0.25, Math.min(4, speed));
+			setAudioRegions((prev) =>
+				prev.map((region) =>
+					region.id === selectedAudioId ? { ...region, speed: nextSpeed } : region,
+				),
+			);
+		},
+		[selectedAudioId],
+	);
+
 	const handleAudioDelete = useCallback(
 		(id: string) => {
 			setAudioRegions((prev) => prev.filter((region) => region.id !== id));
@@ -5961,6 +5974,12 @@ export default function VideoEditor() {
 												?.volume ?? null)
 										: null
 								}
+								selectedAudioSpeed={
+									selectedAudioId
+										? (audioRegions.find((r) => r.id === selectedAudioId)
+												?.speed ?? 1)
+										: null
+								}
 								selectedAudioNormalize={
 									selectedAudioId
 										? (audioRegions.find((r) => r.id === selectedAudioId)
@@ -5968,6 +5987,7 @@ export default function VideoEditor() {
 										: null
 								}
 								onAudioVolumeChange={handleAudioVolumeChange}
+								onAudioSpeedChange={handleAudioSpeedChange}
 								onAudioNormalizeChange={handleAudioNormalizeChange}
 								onAudioDelete={handleAudioDelete}
 								shadowIntensity={shadowIntensity}
