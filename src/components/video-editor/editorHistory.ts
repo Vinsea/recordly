@@ -2,6 +2,7 @@ import type {
 	AnnotationRegion,
 	AudioRegion,
 	CaptionCue,
+	CaptionRegion,
 	ClipRegion,
 	SpeedRegion,
 	ZoomRegion,
@@ -15,6 +16,8 @@ export type EditorHistorySnapshot = {
 	audioRegions: AudioRegion[];
 	autoCaptions: CaptionCue[];
 	autoCaptionsRaw: CaptionCue[];
+	captionRegions: CaptionRegion[];
+	selectedCaptionRegionId: string | null;
 	selectedZoomId: string | null;
 	selectedClipId: string | null;
 	selectedAnnotationId: string | null;
@@ -45,9 +48,7 @@ export function resetEditorHistoryStack(stack: EditorHistoryStack): void {
 	stack.future = [];
 }
 
-export function cloneEditorHistorySnapshot(
-	snapshot: EditorHistorySnapshot,
-): EditorHistorySnapshot {
+export function cloneEditorHistorySnapshot(snapshot: EditorHistorySnapshot): EditorHistorySnapshot {
 	return globalThis.structuredClone(snapshot);
 }
 
