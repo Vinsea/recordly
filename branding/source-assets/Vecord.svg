@@ -1,0 +1,15 @@
+<svg width="452" height="452" viewBox="0 0 452 452" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M0 62C0 27.7584 27.7583 0 62 0H390C424.242 0 452 27.7583 452 62V390C452 424.242 424.242 452 390 452H62C27.7584 452 0 424.242 0 390V62Z" fill="url(#bg)"/>
+  <polyline points="88,92 226,368 364,92" stroke="white" stroke-width="66" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="100" fill="none"/>
+  <circle cx="226" cy="368" r="20" fill="url(#dot)"/>
+  <defs>
+    <linearGradient id="bg" x1="226" y1="0" x2="226" y2="452" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6D28D9"/>
+      <stop offset="1" stop-color="#1E1B4B"/>
+    </linearGradient>
+    <linearGradient id="dot" x1="226" y1="348" x2="226" y2="388" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FB7185"/>
+      <stop offset="1" stop-color="#E11D48"/>
+    </linearGradient>
+  </defs>
+</svg>
