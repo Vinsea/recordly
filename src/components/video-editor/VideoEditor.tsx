@@ -5396,6 +5396,8 @@ export default function VideoEditor() {
 							Math.min(1, previewVolume * audio.embeddedSourcePreviewGain),
 						)
 			}
+			captionRegions={captionRegions}
+			selectedCaptionRegionId={selectedCaptionRegionId}
 			suspendRendering={suspendRendering}
 		/>
 	);

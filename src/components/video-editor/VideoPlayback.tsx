@@ -36,6 +36,7 @@ import {
 	type AnnotationRegion,
 	type AutoCaptionSettings,
 	type CaptionCue,
+	type CaptionRegion,
 	type CursorClickEffectStyle,
 	type CursorStyle,
 	type Padding,
@@ -361,6 +362,8 @@ interface VideoPlaybackProps {
 	annotationRegions?: AnnotationRegion[];
 	autoCaptions?: CaptionCue[];
 	autoCaptionSettings?: AutoCaptionSettings;
+	captionRegions?: CaptionRegion[];
+	selectedCaptionRegionId?: string | null;
 	selectedAnnotationId?: string | null;
 	onSelectAnnotation?: (id: string | null) => void;
 	onAnnotationPositionChange?: (id: string, position: { x: number; y: number }) => void;
@@ -444,6 +447,8 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 			annotationRegions = [],
 			autoCaptions = [],
 			autoCaptionSettings,
+			captionRegions = [],
+			selectedCaptionRegionId,
 			selectedAnnotationId,
 			onSelectAnnotation,
 			onAnnotationPositionChange,
@@ -3050,6 +3055,35 @@ const VideoPlayback = forwardRef<VideoPlaybackRef, VideoPlaybackProps>(
 								</div>
 							</div>
 						) : null}
+						{captionRegions.map((region) => {
+							if (currentTime * 1000 < region.startMs || currentTime * 1000 > region.endMs) {
+								return null;
+							}
+							const s = region.style;
+							const isSelected = region.id === selectedCaptionRegionId;
+							return (
+								<div
+									key={region.id}
+									className="pointer-events-none absolute inset-x-0 flex justify-center"
+									style={{ bottom: `${s.bottomOffset}%` }}
+								>
+									<div
+										style={{
+											maxWidth: `${s.maxWidth}%`,
+											backgroundColor: `rgba(0, 0, 0, ${s.backgroundOpacity})`,
+											fontFamily: s.fontFamily,
+											fontSize: `${s.fontSize}px`,
+											color: s.textColor,
+											borderRadius: `${s.boxRadius}px`,
+											padding: "4px 12px",
+											outline: isSelected ? "2px solid #2563EB" : "none",
+										}}
+									>
+										{region.text}
+									</div>
+								</div>
+							);
+						})}
 						{(() => {
 							const filtered = (annotationRegions || []).filter((annotation) => {
 								if (
