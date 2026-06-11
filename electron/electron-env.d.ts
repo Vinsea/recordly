@@ -689,6 +689,7 @@ interface Window {
 			whisperExecutablePath?: string;
 			whisperModelPath: string;
 			language?: string;
+			clipRegions?: Array<{ startMs: number; endMs: number }>;
 			extraAudioRegions?: Array<{ path: string; startMs: number; endMs: number }>;
 		}) => Promise<{
 			success: boolean;
