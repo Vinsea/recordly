@@ -2825,7 +2825,7 @@ export function SettingsPanel({
 							))}
 							{captionCustomFonts.length > 0 && (
 								<>
-									<div className="px-2 py-1 text-xs text-foreground/50">
+									<div className="px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
 										Custom Fonts
 									</div>
 									{captionCustomFonts.map((font) => (
