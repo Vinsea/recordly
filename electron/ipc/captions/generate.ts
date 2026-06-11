@@ -377,22 +377,33 @@ export async function generateAutoCaptionsFromVideo(options: {
 	const jsonPath = `${outputBase}.json`;
 
 	try {
-		const audioSource = await extractCaptionAudioSource({
-			videoPath: normalizedVideoPath,
-			ffmpegPath,
-			wavPath,
-		});
+		let audioSourceLabel: string;
+		let concatMapping: Array<{ sourceStartMs: number; sourceEndMs: number; concatOffsetMs: number }>;
 
-		// If clip regions provided, re-extract with segment slicing (overwrites wavPath)
-		const concatMapping =
-			options.clipRegions && options.clipRegions.length > 0
-				? await extractAndConcatClipAudio({
-						sourcePath: audioSource.path,
-						ffmpegPath,
-						clips: options.clipRegions,
-						outputWavPath: wavPath,
-					})
-				: [];
+		if (options.clipRegions && options.clipRegions.length > 0) {
+			// Resolve source path without a full FFmpeg extraction pass
+			const candidates = await resolveCaptionAudioCandidates(normalizedVideoPath);
+			const sourcePath = candidates[0]?.path;
+			if (!sourcePath) {
+				throw new Error("No audio source found for clip-aware extraction.");
+			}
+			await ensureReadableFile(sourcePath);
+			audioSourceLabel = "recording";
+			concatMapping = await extractAndConcatClipAudio({
+				sourcePath,
+				ffmpegPath,
+				clips: options.clipRegions,
+				outputWavPath: wavPath,
+			});
+		} else {
+			const audioSource = await extractCaptionAudioSource({
+				videoPath: normalizedVideoPath,
+				ffmpegPath,
+				wavPath,
+			});
+			audioSourceLabel = audioSource.label;
+			concatMapping = [];
+		}
 
 		const whisperBaseArgs = [
 			"-m",
@@ -441,7 +452,7 @@ export async function generateAutoCaptionsFromVideo(options: {
 
 		return {
 			cues,
-			audioSourceLabel: audioSource.label,
+			audioSourceLabel,
 		};
 	} finally {
 		await Promise.allSettled([

@@ -1685,6 +1685,7 @@ export default function VideoEditor() {
 				annotationRegions: AnnotationRegion[];
 				audioRegions: AudioRegion[];
 				autoCaptions: CaptionCue[];
+				autoCaptionsRaw: CaptionCue[];
 				autoCaptionSettings: AutoCaptionSettings;
 				aspectRatio: AspectRatio;
 				exportEncodingMode: ExportEncodingMode;
@@ -1793,6 +1794,7 @@ export default function VideoEditor() {
 				annotationRegions,
 				audioRegions,
 				autoCaptions,
+				autoCaptionsRaw,
 				autoCaptionSettings,
 				aspectRatio,
 				exportEncodingMode,
@@ -1859,6 +1861,7 @@ export default function VideoEditor() {
 			annotationRegions,
 			audioRegions,
 			autoCaptions,
+			autoCaptionsRaw,
 			autoCaptionSettings,
 			aspectRatio,
 			exportEncodingMode,
