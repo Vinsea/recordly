@@ -85,7 +85,7 @@ import {
 	getAspectRatioLabel,
 	getAspectRatioValue,
 } from "@/utils/aspectRatioUtils";
-import { splitCuesByMaxChars } from "./captionEditing";
+import { estimateAutoMaxChars, splitCuesByMaxChars } from "./captionEditing";
 import { planClipSpeedChange } from "./clipSpeedChange";
 import { ExtensionIcon } from "./ExtensionIcon";
 import { calculateMp4ExportDimensions, calculateMp4SourceDimensions } from "./exportDimensions";
@@ -2800,8 +2800,12 @@ export default function VideoEditor() {
 	// Method A: re-split when maxCharsPerLine changes (uses raw whisper output as source)
 	useEffect(() => {
 		if (autoCaptionsRaw.length === 0) return;
-		setAutoCaptions(splitCuesByMaxChars(autoCaptionsRaw, autoCaptionSettings.maxCharsPerLine));
-	}, [autoCaptionsRaw, autoCaptionSettings.maxCharsPerLine]);
+		const limit =
+			autoCaptionSettings.maxCharsPerLine > 0
+				? autoCaptionSettings.maxCharsPerLine
+				: estimateAutoMaxChars(autoCaptionSettings.fontSize, autoCaptionSettings.maxWidth);
+		setAutoCaptions(splitCuesByMaxChars(autoCaptionsRaw, limit));
+	}, [autoCaptionsRaw, autoCaptionSettings.maxCharsPerLine, autoCaptionSettings.fontSize, autoCaptionSettings.maxWidth]);
 
 	const handleClearAutoCaptions = useCallback(() => {
 		setAutoCaptionsRaw([]);

@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
 	type CaptionEditTarget,
+	estimateAutoMaxChars,
 	normalizeCaptionEditText,
+	splitCuesByMaxChars,
 	updateCaptionCuesForEditedTarget,
 } from "./captionEditing";
 import { buildActiveCaptionLayout } from "./captionLayout";
@@ -113,5 +115,40 @@ describe("captionEditing", () => {
 		const cues: CaptionCue[] = [{ id: "a", startMs: 1_000, endMs: 2_000, text: "Hello Hello" }];
 
 		expect(updateCaptionCuesForEditedTarget(cues, visibleTarget, " \n\t ")).toBe(cues);
+	});
+});
+
+describe("estimateAutoMaxChars", () => {
+	it("returns a reasonable char limit for typical settings", () => {
+		// fontSize=30, maxWidth=62 → targetPx=1190.4, avgCharWidth=16.5 → ~72 chars
+		const result = estimateAutoMaxChars(30, 62);
+		expect(result).toBeGreaterThan(50);
+		expect(result).toBeLessThan(100);
+	});
+
+	it("returns at least 10 even for extreme values", () => {
+		expect(estimateAutoMaxChars(200, 5)).toBeGreaterThanOrEqual(10);
+	});
+});
+
+describe("splitCuesByMaxChars with auto-estimated limit", () => {
+	it("splits a long cue when limit is derived automatically", () => {
+		const longCue: CaptionCue = {
+			id: "cue-1",
+			startMs: 0,
+			endMs: 5000,
+			text: "This is a very long sentence that should be split into multiple parts when the limit is low",
+			words: "This is a very long sentence that should be split into multiple parts when the limit is low"
+				.split(" ")
+				.map((word, i) => ({
+					text: word,
+					startMs: i * 500,
+					endMs: (i + 1) * 500,
+					leadingSpace: i > 0,
+				})),
+		};
+		const limit = estimateAutoMaxChars(30, 62);
+		const result = splitCuesByMaxChars([longCue], limit);
+		expect(result.length).toBeGreaterThan(1);
 	});
 });

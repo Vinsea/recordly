@@ -351,3 +351,11 @@ function distributeEditedTokensAcrossCueSegments(
 
 	return tokenCountsByCue;
 }
+
+/** Estimate max chars per line from canvas dimensions when user hasn't set an explicit limit. */
+export function estimateAutoMaxChars(fontSize: number, maxWidthPercent: number): number {
+	const referenceWidth = 1920;
+	const targetPx = referenceWidth * (maxWidthPercent / 100);
+	const avgCharWidthPx = fontSize * 0.55;
+	return Math.max(10, Math.floor(targetPx / avgCharWidthPx));
+}
