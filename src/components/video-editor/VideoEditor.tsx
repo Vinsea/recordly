@@ -172,6 +172,8 @@ import {
 	type AudioRegion,
 	type AutoCaptionSettings,
 	type CaptionCue,
+	type CaptionRegion,
+	type CaptionRegionStyle,
 	type ClipRegion,
 	type CropRegion,
 	type CursorClickEffectStyle,
@@ -184,6 +186,7 @@ import {
 	DEFAULT_ANNOTATION_STYLE,
 	DEFAULT_AUTO_CAPTION_SETTINGS,
 	DEFAULT_AUTO_ZOOM_DEPTH,
+	DEFAULT_CAPTION_REGION_STYLE,
 	DEFAULT_CONNECTED_ZOOM_DURATION_MS,
 	DEFAULT_CONNECTED_ZOOM_EASING,
 	DEFAULT_CONNECTED_ZOOM_GAP_MS,
@@ -531,6 +534,9 @@ export default function VideoEditor() {
 	const [autoCaptionSettings, setAutoCaptionSettings] = useState<AutoCaptionSettings>(
 		DEFAULT_AUTO_CAPTION_SETTINGS,
 	);
+	const [captionRegions, setCaptionRegions] = useState<CaptionRegion[]>([]);
+	const [selectedCaptionRegionId, setSelectedCaptionRegionId] = useState<string | null>(null);
+	const nextCaptionIdRef = useRef(0);
 	const [includeCaptionSidecar, setIncludeCaptionSidecar] = useState(true);
 	const [timelineHeight, setTimelineHeight] = useState(240);
 	const [whisperExecutablePath, setWhisperExecutablePath] = useState<string | null>(
@@ -1687,6 +1693,7 @@ export default function VideoEditor() {
 				autoCaptions: CaptionCue[];
 				autoCaptionsRaw: CaptionCue[];
 				autoCaptionSettings: AutoCaptionSettings;
+				captionRegions: CaptionRegion[];
 				aspectRatio: AspectRatio;
 				exportEncodingMode: ExportEncodingMode;
 				exportBackendPreference: ExportBackendPreference;
@@ -1892,6 +1899,8 @@ export default function VideoEditor() {
 			selectedClipId,
 			selectedAnnotationId,
 			selectedAudioId,
+			captionRegions,
+			selectedCaptionRegionId,
 		};
 	}, [
 		zoomRegions,
@@ -1905,6 +1914,8 @@ export default function VideoEditor() {
 		selectedClipId,
 		selectedAnnotationId,
 		selectedAudioId,
+		captionRegions,
+		selectedCaptionRegionId,
 	]);
 
 	const applyHistorySnapshot = useCallback((snapshot: EditorHistorySnapshot) => {
@@ -1921,6 +1932,9 @@ export default function VideoEditor() {
 		setSelectedClipId(cloned.selectedClipId);
 		setSelectedAnnotationId(cloned.selectedAnnotationId);
 		setSelectedAudioId(cloned.selectedAudioId);
+		setCaptionRegions(cloned.captionRegions ?? []);
+		setSelectedCaptionRegionId(cloned.selectedCaptionRegionId ?? null);
+		nextCaptionIdRef.current = deriveNextId("caption", (cloned.captionRegions ?? []).map((r) => r.id));
 
 		nextZoomIdRef.current = deriveNextId(
 			"zoom",
@@ -2066,6 +2080,9 @@ export default function VideoEditor() {
 			setAutoCaptionsRaw(normalizedEditor.autoCaptionsRaw ?? []);
 			setAutoCaptions(normalizedEditor.autoCaptions);
 			setAutoCaptionSettings(normalizedEditor.autoCaptionSettings);
+			setCaptionRegions(normalizedEditor.captionRegions ?? []);
+			setSelectedCaptionRegionId(null);
+			nextCaptionIdRef.current = deriveNextId("caption", (normalizedEditor.captionRegions ?? []).map((r) => r.id));
 			setAspectRatio(normalizedEditor.aspectRatio);
 			setExportEncodingMode(normalizedEditor.exportEncodingMode);
 			setExportBackendPreference(normalizedEditor.exportBackendPreference);
@@ -2817,6 +2834,65 @@ export default function VideoEditor() {
 		setAutoCaptionsRaw([]);
 		setAutoCaptions([]);
 		setAutoCaptionSettings((prev) => ({ ...prev, enabled: false }));
+	}, []);
+
+	const handleConvertCaptionsToTrack = useCallback(() => {
+		if (autoCaptions.length === 0) return;
+		const newRegions: CaptionRegion[] = autoCaptions.map((cue, i) => ({
+			id: `caption-${nextCaptionIdRef.current + i}`,
+			startMs: cue.startMs,
+			endMs: cue.endMs,
+			text: cue.text,
+			words: cue.words,
+			style: { ...DEFAULT_CAPTION_REGION_STYLE },
+		}));
+		nextCaptionIdRef.current += newRegions.length;
+		setCaptionRegions(newRegions);
+		setAutoCaptions([]);
+		setAutoCaptionsRaw([]);
+		setAutoCaptionSettings((prev) => ({ ...prev, enabled: false }));
+	}, [autoCaptions]);
+
+	const handleCaptionRegionSpanChange = useCallback(
+		(id: string, span: { start: number; end: number }) => {
+			setCaptionRegions((prev) =>
+				prev.map((r) => (r.id === id ? { ...r, startMs: span.start, endMs: span.end } : r)),
+			);
+		},
+		[],
+	);
+
+	const handleCaptionRegionStyleChange = useCallback(
+		(id: string, style: Partial<CaptionRegionStyle>) => {
+			setCaptionRegions((prev) =>
+				prev.map((r) => (r.id === id ? { ...r, style: { ...r.style, ...style } } : r)),
+			);
+		},
+		[],
+	);
+
+	const handleCaptionRegionTextChange = useCallback((id: string, text: string) => {
+		setCaptionRegions((prev) =>
+			prev.map((r) => (r.id === id ? { ...r, text } : r)),
+		);
+	}, []);
+
+	const handleCaptionRegionDelete = useCallback((id: string) => {
+		setCaptionRegions((prev) => prev.filter((r) => r.id !== id));
+		setSelectedCaptionRegionId((prev) => (prev === id ? null : prev));
+	}, []);
+
+	const handleApplyCaptionStyleToAll = useCallback(
+		(id: string) => {
+			const source = captionRegions.find((r) => r.id === id);
+			if (!source) return;
+			setCaptionRegions((prev) => prev.map((r) => ({ ...r, style: { ...source.style } })));
+		},
+		[captionRegions],
+	);
+
+	const handleSelectCaptionRegion = useCallback((id: string | null) => {
+		setSelectedCaptionRegionId(id);
 	}, []);
 
 	const saveProject = useCallback(
@@ -4237,6 +4313,15 @@ export default function VideoEditor() {
 			setSelectedAnnotationId(null);
 		}
 	}, [selectedAnnotationId, annotationRegions]);
+
+	useEffect(() => {
+		if (
+			selectedCaptionRegionId &&
+			!captionRegions.some((r) => r.id === selectedCaptionRegionId)
+		) {
+			setSelectedCaptionRegionId(null);
+		}
+	}, [selectedCaptionRegionId, captionRegions]);
 
 	useEffect(() => {
 		if (selectedAudioId && !audioRegions.some((region) => region.id === selectedAudioId)) {
