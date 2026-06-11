@@ -581,6 +581,43 @@ export const DEFAULT_AUTO_CAPTION_SETTINGS: AutoCaptionSettings = {
 	textStrokeColor: "#000000",
 };
 
+export interface CaptionRegionStyle {
+	fontFamily: string;
+	fontSize: number;
+	textColor: string;
+	inactiveTextColor: string;
+	backgroundOpacity: number;
+	boxRadius: number;
+	bottomOffset: number;
+	maxWidth: number;
+	animationStyle: AutoCaptionAnimation;
+	textStrokeWidth: number;
+	textStrokeColor: string;
+}
+
+export const DEFAULT_CAPTION_REGION_STYLE: CaptionRegionStyle = {
+	fontFamily: getDefaultCaptionFontFamily(),
+	fontSize: 30,
+	textColor: "#FFFFFF",
+	inactiveTextColor: "#A3A3A3",
+	backgroundOpacity: 0.9,
+	boxRadius: 17.5,
+	bottomOffset: 3,
+	maxWidth: 62,
+	animationStyle: "fade",
+	textStrokeWidth: 0,
+	textStrokeColor: "#000000",
+};
+
+export interface CaptionRegion {
+	id: string;
+	startMs: number;
+	endMs: number;
+	text: string;
+	words?: CaptionCueWord[];
+	style: CaptionRegionStyle;
+}
+
 export type PlaybackSpeed = 0.25 | 0.5 | 0.75 | 1.25 | 1.5 | 1.75 | 2;
 
 export interface SpeedRegion {
