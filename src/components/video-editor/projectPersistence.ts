@@ -758,13 +758,18 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 				.filter((cue): cue is CaptionCue => Boolean(cue && typeof cue.id === "string"))
 				.map((cue) => {
 					const rawStart = isFiniteNumber(cue.startMs) ? Math.round(cue.startMs) : 0;
-					const rawEnd = isFiniteNumber(cue.endMs) ? Math.round(cue.endMs) : rawStart;
+					const rawEnd = isFiniteNumber(cue.endMs) ? Math.round(cue.endMs) : rawStart + 1000;
 					return {
 						id: cue.id,
 						startMs: rawStart,
-						endMs: Math.max(rawStart, rawEnd),
+						endMs: Math.max(rawStart + 1, rawEnd),
 						text: typeof cue.text === "string" ? cue.text : "",
-						words: Array.isArray(cue.words) ? cue.words : undefined,
+						words: Array.isArray(cue.words)
+							? (cue.words as CaptionCueWord[]).filter(
+									(word): word is CaptionCueWord =>
+										Boolean(word && typeof word.text === "string"),
+								)
+							: undefined,
 					} satisfies CaptionCue;
 				})
 		: [];
