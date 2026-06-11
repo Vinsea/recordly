@@ -176,6 +176,8 @@ export function updateCaptionCuesForEditedTarget(
 	});
 }
 
+const SENTENCE_END_RE = /[，。！？；,.!?;…]\s*$/;
+
 export function splitCuesByMaxChars(cues: CaptionCue[], maxCharsPerLine: number): CaptionCue[] {
 	const limit = Math.round(maxCharsPerLine);
 	if (limit <= 0) return cues;
@@ -190,20 +192,29 @@ export function splitCuesByMaxChars(cues: CaptionCue[], maxCharsPerLine: number)
 			continue;
 		}
 
-		// Build groups of words that fit within maxCharsPerLine
+		// Collect candidate break indices: after punctuation-ending words, or when chars exceed limit
 		const groups: CaptionCueWord[][] = [];
 		let current: CaptionCueWord[] = [];
 		let lineChars = 0;
 
-		for (const word of words) {
+		for (let i = 0; i < words.length; i++) {
+			const word = words[i];
 			const addedLen = current.length === 0 ? word.text.length : 1 + word.text.length;
+
 			if (current.length > 0 && lineChars + addedLen > limit) {
+				// Exceeded limit — flush before this word
 				groups.push(current);
 				current = [word];
 				lineChars = word.text.length;
 			} else {
 				current.push(word);
 				lineChars += addedLen;
+				// Punctuation at end of word is a natural break point (flush after this word)
+				if (SENTENCE_END_RE.test(word.text) && i < words.length - 1) {
+					groups.push(current);
+					current = [];
+					lineChars = 0;
+				}
 			}
 		}
 		if (current.length > 0) groups.push(current);
