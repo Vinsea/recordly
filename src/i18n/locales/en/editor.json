@@ -111,7 +111,9 @@
 		"showInFolder": "Show In Folder"
 	},
 	"project": {
-		"untitled": "Untitled"
+		"untitled": "Untitled",
+		"saving": "Saving...",
+		"saved": "Saved"
 	},
 	"nativeCaptureUnavailable": {
 		"title": "Nothing’s broken, but we won’t be able to render an animated cursor overlay.",

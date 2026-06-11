@@ -321,6 +321,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		document.documentElement.lang = locale;
+		if (typeof window !== "undefined" && window.electronAPI?.setLocale) {
+			window.electronAPI.setLocale(locale);
+		}
 	}, [locale]);
 
 	const t = useCallback(

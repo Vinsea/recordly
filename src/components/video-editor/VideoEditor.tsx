@@ -672,8 +672,10 @@ export default function VideoEditor() {
 	const smokeExportStartedRef = useRef(false);
 	const projectAutosaveTimeoutRef = useRef<number | null>(null);
 	const projectSaveQueueRef = useRef<Promise<unknown>>(Promise.resolve());
+	const autosaveSavedTimerRef = useRef<number | null>(null);
 	const smokeExportReadyStateRef = useRef<Record<string, unknown>>({});
 	const [historyVersion, setHistoryVersion] = useState(0);
+	const [autosaveStatus, setAutosaveStatus] = useState<"idle" | "saving" | "saved">("idle");
 	const timelineRef = useRef<TimelineEditorHandle>(null);
 
 	function formatTime(seconds: number) {
@@ -2808,6 +2810,9 @@ export default function VideoEditor() {
 	const saveProject = useCallback(
 		async (forceSaveAs: boolean, options?: SaveProjectOptions) => {
 			clearPendingProjectAutosave();
+			if (options?.silent) {
+				setAutosaveStatus("saving");
+			}
 			return queueProjectSave(async () => {
 				if (!currentSourcePath) {
 					if (!options?.silent) {
@@ -2892,6 +2897,14 @@ export default function VideoEditor() {
 					if (!options?.silent) {
 						toast.success(`Project saved to ${result.path}`);
 					}
+					if (autosaveSavedTimerRef.current !== null) {
+						window.clearTimeout(autosaveSavedTimerRef.current);
+					}
+					setAutosaveStatus("saved");
+					autosaveSavedTimerRef.current = window.setTimeout(() => {
+						autosaveSavedTimerRef.current = null;
+						setAutosaveStatus("idle");
+					}, 2000);
 					return true;
 				} finally {
 					if (shouldRemountPreview) {
@@ -5454,6 +5467,13 @@ export default function VideoEditor() {
 								.recordly
 							</span>
 						</button>
+					)}
+					{autosaveStatus !== "idle" && (
+						<span className="ml-1 text-[11px] text-muted-foreground">
+							{autosaveStatus === "saving"
+								? t("editor.project.saving", "Saving...")
+								: t("editor.project.saved", "Saved")}
+						</span>
 					)}
 					{hasUnsavedChanges && currentProjectPath && (
 						<button

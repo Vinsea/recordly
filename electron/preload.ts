@@ -943,6 +943,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
 	setHasUnsavedChanges: (hasChanges: boolean) => {
 		ipcRenderer.send("set-has-unsaved-changes", hasChanges);
 	},
+	setLocale: (locale: string) => {
+		ipcRenderer.send("set-locale", locale);
+	},
 	onRequestSaveBeforeClose: (callback: () => Promise<boolean>) => {
 		const listener = async () => {
 			let saved = false;

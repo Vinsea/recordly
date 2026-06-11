@@ -111,7 +111,9 @@
 		"showInFolder": "在資料夾中顯示"
 	},
 	"project": {
-		"untitled": "未命名"
+		"untitled": "未命名",
+		"saving": "儲存中...",
+		"saved": "已儲存"
 	},
 	"nativeCaptureUnavailable": {
 		"title": "沒有出錯，但我們無法轉譯動畫游標覆蓋層。",

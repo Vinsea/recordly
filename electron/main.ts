@@ -140,6 +140,7 @@ let tray: Tray | null = null;
 let trayContextMenu: Menu | null = null;
 let selectedSourceName = "";
 let editorHasUnsavedChanges = false;
+let editorLocale = "en";
 let isForceClosing = false;
 let isCreatingMainWindow = false;
 let isCreatingEditorWindow = false;
@@ -201,7 +202,7 @@ let defaultTrayIcon: ReturnType<typeof getTrayIcon> | null = null;
 let recordingTrayIcon: ReturnType<typeof getTrayIcon> | null = null;
 
 function getPlatformAppIconFilename(size: 32 | 128 | 512) {
-	const baseName = process.platform === "darwin" ? "recordlymac" : "recordly";
+	const baseName = process.platform === "darwin" ? "vecordmac" : "vecord";
 	return `app-icons/${baseName}-${size}.png`;
 }
 
@@ -245,6 +246,35 @@ function showHudOverlayFromTray() {
 ipcMain.on("set-has-unsaved-changes", (_event, hasChanges: boolean) => {
 	editorHasUnsavedChanges = hasChanges;
 });
+
+ipcMain.on("set-locale", (_event, locale: string) => {
+	editorLocale = locale;
+});
+
+function getCloseDialogStrings(locale: string) {
+	if (locale === "zh-CN") {
+		return {
+			title: "有未保存的更改",
+			message: "您有未保存的更改。",
+			detail: "关闭前是否要保存项目？",
+			buttons: ["保存并关闭", "不保存直接关闭", "取消"],
+		};
+	}
+	if (locale === "zh-TW") {
+		return {
+			title: "有未儲存的變更",
+			message: "您有未儲存的變更。",
+			detail: "關閉前是否要儲存專案？",
+			buttons: ["儲存並關閉", "不儲存直接關閉", "取消"],
+		};
+	}
+	return {
+		title: "Unsaved Changes",
+		message: "You have unsaved changes.",
+		detail: "Do you want to save your project before closing?",
+		buttons: ["Save & Close", "Discard & Close", "Cancel"],
+	};
+}
 
 function createWindow() {
 	if (!app.isReady()) {
@@ -520,22 +550,22 @@ function syncDockIcon() {
 function getUpdateNotificationTitle(payload: UpdateToastPayload) {
 	switch (payload.phase) {
 		case "available":
-			return `Recordly ${payload.version} is available`;
+			return `Vecord ${payload.version} is available`;
 		case "downloading":
-			return `Downloading Recordly ${payload.version}`;
+			return `Downloading Vecord ${payload.version}`;
 		case "ready":
-			return `Recordly ${payload.version} is ready`;
+			return `Vecord ${payload.version} is ready`;
 		case "error":
-			return `Recordly ${payload.version} needs attention`;
+			return `Vecord ${payload.version} needs attention`;
 	}
 }
 
 function getUpdateNotificationBody(payload: UpdateToastPayload) {
 	switch (payload.phase) {
 		case "available":
-			return "Click to install the update and restart Recordly.";
+			return "Click to install the update and restart Vecord.";
 		case "downloading":
-			return "Recordly is downloading the update and will restart when it is ready.";
+			return "Vecord is downloading the update and will restart when it is ready.";
 		case "ready":
 			return "Click to install the downloaded update and restart.";
 		case "error":
@@ -710,7 +740,7 @@ ipcMain.handle("check-for-app-updates", async () => {
 function updateTrayMenu(recording: boolean = false) {
 	if (!tray) return;
 	const trayIcon = recording ? getRecordingTrayIcon() : getDefaultTrayIcon();
-	const trayToolTip = recording ? `Recording: ${selectedSourceName}` : "Recordly";
+	const trayToolTip = recording ? `Recording: ${selectedSourceName}` : "Vecord";
 	const menuTemplate = recording
 		? [
 				{
@@ -816,14 +846,15 @@ function createEditorWindowWrapper() {
 
 		event.preventDefault();
 
+		const strings = getCloseDialogStrings(editorLocale);
 		const choice = dialog.showMessageBoxSync(editorWindow, {
 			type: "warning",
-			buttons: ["Save & Close", "Discard & Close", "Cancel"],
+			buttons: strings.buttons,
 			defaultId: 0,
 			cancelId: 2,
-			title: "Unsaved Changes",
-			message: "You have unsaved changes.",
-			detail: "Do you want to save your project before closing?",
+			title: strings.title,
+			message: strings.message,
+			detail: strings.detail,
 		});
 
 		if (choice === 0) {
@@ -898,7 +929,7 @@ async function openRecordlyFile(filePath: string) {
 // Register all IPC handlers when app is ready
 app.whenReady().then(async () => {
 	if (process.platform === "win32") {
-		app.setAppUserModelId("dev.recordly.app");
+		app.setAppUserModelId("app.vecord.desktop");
 	}
 
 	session.defaultSession.setPermissionCheckHandler((_webContents, permission) => {
