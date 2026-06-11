@@ -156,12 +156,140 @@ export async function extractCaptionAudioSource(options: {
 	);
 }
 
+interface ClipSegment {
+	startMs: number;
+	endMs: number;
+}
+
+/** Extracts kept clip segments from source audio and concatenates them into a single WAV. */
+async function extractAndConcatClipAudio(options: {
+	sourcePath: string;
+	ffmpegPath: string;
+	clips: ClipSegment[];
+	outputWavPath: string;
+}): Promise<Array<{ sourceStartMs: number; sourceEndMs: number; concatOffsetMs: number }>> {
+	const { sourcePath, ffmpegPath, clips, outputWavPath } = options;
+	const sorted = [...clips].sort((a, b) => a.startMs - b.startMs);
+
+	if (sorted.length === 0) {
+		// No clips — extract full audio unchanged
+		await execFileAsync(
+			ffmpegPath,
+			["-y", "-i", sourcePath, "-map", "0:a:0", "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", outputWavPath],
+			{ timeout: 5 * 60 * 1000, maxBuffer: 20 * 1024 * 1024 },
+		);
+		return [];
+	}
+
+	// Extract each segment to a temp file
+	const tempDir = path.dirname(outputWavPath);
+	const segmentPaths: string[] = [];
+	const mapping: Array<{ sourceStartMs: number; sourceEndMs: number; concatOffsetMs: number }> = [];
+	let concatOffsetMs = 0;
+
+	try {
+		for (let i = 0; i < sorted.length; i++) {
+			const clip = sorted[i];
+			const durationMs = clip.endMs - clip.startMs;
+			if (durationMs <= 0) continue;
+
+			const segPath = path.join(tempDir, `seg-${i}-${Date.now()}.wav`);
+			segmentPaths.push(segPath);
+
+			await execFileAsync(
+				ffmpegPath,
+				[
+					"-y",
+					"-ss", String(clip.startMs / 1000),
+					"-t", String(durationMs / 1000),
+					"-i", sourcePath,
+					"-map", "0:a:0",
+					"-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
+					segPath,
+				],
+				{ timeout: 5 * 60 * 1000, maxBuffer: 20 * 1024 * 1024 },
+			);
+
+			mapping.push({ sourceStartMs: clip.startMs, sourceEndMs: clip.endMs, concatOffsetMs });
+			concatOffsetMs += durationMs;
+		}
+
+		if (segmentPaths.length === 1) {
+			// Only one segment — no need to concat, just rename
+			await fs.rename(segmentPaths[0], outputWavPath);
+			segmentPaths.length = 0; // already moved
+		} else {
+			// Build FFmpeg concat list file
+			const listPath = path.join(tempDir, `concat-list-${Date.now()}.txt`);
+			const listContent = segmentPaths.map((p) => `file '${p.replace(/'/g, "'\\''")}'`).join("\n");
+			await fs.writeFile(listPath, listContent, "utf-8");
+
+			try {
+				await execFileAsync(
+					ffmpegPath,
+					["-y", "-f", "concat", "-safe", "0", "-i", listPath, "-c", "copy", outputWavPath],
+					{ timeout: 5 * 60 * 1000, maxBuffer: 20 * 1024 * 1024 },
+				);
+			} finally {
+				await fs.rm(listPath, { force: true });
+			}
+		}
+	} finally {
+		await Promise.allSettled(segmentPaths.map((p) => fs.rm(p, { force: true })));
+	}
+
+	return mapping;
+}
+
+interface ConcatMapping {
+	sourceStartMs: number;
+	sourceEndMs: number;
+	concatOffsetMs: number;
+}
+
+function remapCuesToSourceTime(
+	cues: CaptionCuePayload[],
+	mapping: ConcatMapping[],
+): CaptionCuePayload[] {
+	if (mapping.length === 0) return cues; // no clips passed — full audio, no remap needed
+
+	const result: CaptionCuePayload[] = [];
+	for (const cue of cues) {
+		// Find which concat segment this cue's midpoint falls in
+		const midMs = (cue.startMs + cue.endMs) / 2;
+		const segment = mapping.find((seg) => {
+			const segDurationMs = seg.sourceEndMs - seg.sourceStartMs;
+			const segEndConcatMs = seg.concatOffsetMs + segDurationMs;
+			return midMs >= seg.concatOffsetMs && midMs < segEndConcatMs;
+		});
+		if (!segment) continue; // cue is in a trimmed gap — skip
+
+		const offset = segment.sourceStartMs - segment.concatOffsetMs;
+		const newStart = Math.max(segment.sourceStartMs, Math.round(cue.startMs + offset));
+		const newEnd = Math.min(segment.sourceEndMs, Math.round(cue.endMs + offset));
+		if (newEnd <= newStart) continue;
+
+		result.push({
+			...cue,
+			startMs: newStart,
+			endMs: newEnd,
+			words: cue.words?.map((w) => ({
+				...w,
+				startMs: Math.max(newStart, Math.round(w.startMs + offset)),
+				endMs: Math.min(newEnd, Math.round(w.endMs + offset)),
+			})),
+		});
+	}
+	return result;
+}
+
 export async function generateAutoCaptionsFromVideo(options: {
 	videoPath: string;
 	whisperExecutablePath?: string;
 	whisperModelPath: string;
 	language?: string;
 	extraAudioRegions?: Array<{ path: string; startMs: number; endMs: number }>;
+	clipRegions?: Array<{ startMs: number; endMs: number }>;
 }) {
 	const ffmpegPath = getFfmpegBinaryPath();
 	const normalizedVideoPath = normalizeVideoSourcePath(options.videoPath);
@@ -255,6 +383,17 @@ export async function generateAutoCaptionsFromVideo(options: {
 			wavPath,
 		});
 
+		// If clip regions provided, re-extract with segment slicing (overwrites wavPath)
+		const concatMapping =
+			options.clipRegions && options.clipRegions.length > 0
+				? await extractAndConcatClipAudio({
+						sourcePath: audioSource.path,
+						ffmpegPath,
+						clips: options.clipRegions,
+						outputWavPath: wavPath,
+					})
+				: [];
+
 		const whisperBaseArgs = [
 			"-m",
 			whisperModelPath,
@@ -293,11 +432,12 @@ export async function generateAutoCaptionsFromVideo(options: {
 		const timedCues = jsonEnabled
 			? parseWhisperJsonCues(await fs.readFile(jsonPath, "utf-8"))
 			: [];
-		const cues =
+		const rawCues =
 			timedCues.length > 0 ? timedCues : parseSrtCues(await fs.readFile(srtPath, "utf-8"));
-		if (cues.length === 0) {
+		if (rawCues.length === 0) {
 			throw new Error("Whisper completed, but no caption cues were produced.");
 		}
+		const cues = remapCuesToSourceTime(rawCues, concatMapping);
 
 		return {
 			cues,

@@ -2758,11 +2758,12 @@ export default function VideoEditor() {
 
 		setIsGeneratingCaptions(true);
 		try {
-			const result = await window.electronAPI.generateAutoCaptions({
+		const result = await window.electronAPI.generateAutoCaptions({
 				videoPath: sourcePath,
 				whisperExecutablePath: whisperExecutablePath ?? undefined,
 				whisperModelPath,
 				language: autoCaptionSettings.language,
+				clipRegions: clipRegions.map((c) => ({ startMs: c.startMs, endMs: c.endMs })),
 				extraAudioRegions: audioRegions
 					.filter((r) => r.audioPath)
 					.map((r) => ({ path: r.audioPath, startMs: r.startMs, endMs: r.endMs })),
@@ -2788,6 +2789,8 @@ export default function VideoEditor() {
 		}
 	}, [
 		autoCaptionSettings.language,
+		audioRegions,
+		clipRegions,
 		isGeneratingCaptions,
 		webcam.sourcePath,
 		syncActiveVideoSource,
