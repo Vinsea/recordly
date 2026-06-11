@@ -776,6 +776,15 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 				})
 		: [];
 
+	const normalizedCaptionRegions: CaptionRegion[] = Array.isArray(
+		(editor as Partial<ProjectEditorState>).captionRegions,
+	)
+		? ((editor as Partial<ProjectEditorState>).captionRegions as CaptionRegion[]).filter(
+				(region): region is CaptionRegion =>
+					Boolean(region && typeof region.id === "string"),
+			)
+		: [];
+
 	const rawAutoCaptionSettings: Partial<AutoCaptionSettings> =
 		editor.autoCaptionSettings && typeof editor.autoCaptionSettings === "object"
 			? (editor.autoCaptionSettings as Partial<AutoCaptionSettings>)
@@ -1029,7 +1038,7 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 		audioRegions: normalizedAudioRegions,
 		autoCaptions: normalizedAutoCaptions,
 		autoCaptionsRaw: normalizedAutoCaptionsRaw,
-		captionRegions: [],
+		captionRegions: normalizedCaptionRegions,
 		autoCaptionSettings: normalizedAutoCaptionSettings,
 		webcam: {
 			enabled:
