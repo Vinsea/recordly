@@ -3773,7 +3773,6 @@ export default function VideoEditor() {
 				setZoomRegions((prev) => removeTrimmedRegions(prev));
 				setAnnotationRegions((prev) => removeTrimmedRegions(prev));
 				setSpeedRegions((prev) => removeTrimmedRegions(prev));
-				setAudioRegions((prev) => removeTrimmedRegions(prev));
 			}
 
 			setClipRegions((prev) =>
@@ -3855,9 +3854,6 @@ export default function VideoEditor() {
 					prev.filter((region) => region.endMs <= startMs || region.startMs >= endMs),
 				);
 				setSpeedRegions((prev) =>
-					prev.filter((region) => region.endMs <= startMs || region.startMs >= endMs),
-				);
-				setAudioRegions((prev) =>
 					prev.filter((region) => region.endMs <= startMs || region.startMs >= endMs),
 				);
 			}
