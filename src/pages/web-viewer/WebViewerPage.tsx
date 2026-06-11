@@ -118,7 +118,7 @@ const WALLPAPER_PRESETS = BUILT_IN_WALLPAPERS.filter((w) => !w.publicPath.endsWi
 }));
 
 const EASING_OPTIONS = [
-	{ value: "recordly", label: "Recordly" },
+	{ value: "vecord", label: "Vecord" },
 	{ value: "glide", label: "Glide" },
 	{ value: "smooth", label: "Smooth" },
 	{ value: "snappy", label: "Snappy" },
@@ -305,16 +305,18 @@ function JsonEditor({
 export function WebViewerPage({
 	initialProjectJson,
 	initialBindings,
+	initialCursorTelemetry,
 	showHeader = true,
 }: {
 	initialProjectJson?: string;
 	initialBindings?: Map<string, File>;
+	initialCursorTelemetry?: CursorTelemetryPoint[];
 	showHeader?: boolean;
 }) {
 	const { t } = useI18n();
 	const [projectText, setProjectText] = useState(initialProjectJson ?? "");
 	const [bindings, setBindings] = useState<Map<string, File>>(initialBindings ?? new Map());
-	const [cursorTelemetry, setCursorTelemetry] = useState<CursorTelemetryPoint[]>([]);
+	const [cursorTelemetry, setCursorTelemetry] = useState<CursorTelemetryPoint[]>(initialCursorTelemetry ?? []);
 	const [editorTab, setEditorTab] = useState<"visual" | "json">("visual");
 	const project = useMemo(() => (projectText ? parseWebProject(projectText) : null), [projectText]);
 	const [resolvedPrimaryVideoUrl, setResolvedPrimaryVideoUrl] = useState<string | null>(null);
@@ -350,6 +352,12 @@ export function WebViewerPage({
 	useEffect(() => {
 		setBindings(initialBindings ?? new Map());
 	}, [initialBindings]);
+
+	useEffect(() => {
+		if (initialCursorTelemetry && initialCursorTelemetry.length > 0) {
+			setCursorTelemetry(initialCursorTelemetry);
+		}
+	}, [initialCursorTelemetry]);
 
 	useEffect(() => {
 		if (!isSeeking) setSeekValue(currentTime);
