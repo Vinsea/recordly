@@ -4,6 +4,7 @@ import { useCallback, useImperativeHandle } from "react";
 import type {
 	AnnotationRegion,
 	AudioRegion,
+	CaptionRegion,
 	ClipRegion,
 	CursorTelemetryPoint,
 	SpeedRegion,
@@ -60,6 +61,9 @@ interface UseTimelineEditorRuntimeParams {
 	onAudioSplit?: (id: string, splitMs: number) => void;
 	selectedAudioId?: string | null;
 	onSelectAudio?: (id: string | null) => void;
+	captionRegions?: CaptionRegion[];
+	onCaptionRegionSpanChange?: (id: string, span: { start: number; end: number }) => void;
+	onCaptionRegionDelete?: (id: string) => void;
 	isMac: boolean;
 	keyShortcuts: TimelineShortcutBindings;
 	isTimelineFocusedRef: RefObject<boolean>;
@@ -105,6 +109,9 @@ export function useTimelineEditorRuntime({
 	onAudioSplit,
 	selectedAudioId,
 	onSelectAudio,
+	captionRegions,
+	onCaptionRegionSpanChange,
+	onCaptionRegionDelete,
 	isMac,
 	keyShortcuts,
 	isTimelineFocusedRef,
@@ -151,6 +158,8 @@ export function useTimelineEditorRuntime({
 		onSelectAudio,
 	});
 
+	void onCaptionRegionDelete;
+
 	useTimelineNormalization({
 		totalMs,
 		safeMinDurationMs,
@@ -177,12 +186,14 @@ export function useTimelineEditorRuntime({
 		annotationRegions,
 		speedRegions,
 		audioRegions,
+		captionRegions,
 		onZoomSpanChange,
 		onTrimSpanChange,
 		onClipSpanChange,
 		onAnnotationSpanChange,
 		onSpeedSpanChange,
 		onAudioSpanChange,
+		onCaptionRegionSpanChange,
 	});
 
 	const {

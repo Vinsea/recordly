@@ -21,8 +21,10 @@ import {
 	getAnnotationTrackRowId,
 	getAudioTrackIndex,
 	getAudioTrackRowId,
+	getCaptionTrackRowId,
 	isAnnotationTrackRowId,
 	isAudioTrackRowId,
+	isCaptionTrackRowId,
 } from "../../core/rows";
 import type { TimelineRenderItem } from "../../core/timelineTypes";
 import { useTimelineAudioPeaks } from "../../hooks/useTimelineAudioPeaks";
@@ -57,6 +59,8 @@ interface TimelineCanvasProps {
 	selectedAudioId?: string | null;
 	selectAllBlocksActive?: boolean;
 	onClearBlockSelection?: () => void;
+	selectedCaptionRegionId?: string | null;
+	onSelectCaptionRegion?: (id: string | null) => void;
 	keyframes?: { id: string; time: number }[];
 	sourceAudioTracks?: SourceAudioTrackWithPeaks[];
 	getSourceAudioTrackSettingsForClip?: (clipId: string | null) => SourceAudioTrackSettings;
@@ -232,6 +236,8 @@ interface TimelineCanvasRowsProps {
 	onSelectClip?: (id: string | null) => void;
 	onSelectAnnotation?: (id: string | null) => void;
 	onSelectAudio?: (id: string | null) => void;
+	selectedCaptionRegionId?: string | null;
+	onSelectCaptionRegion?: (id: string | null) => void;
 	sourceAudioTracks?: SourceAudioTrackWithPeaks[];
 	getSourceAudioTrackSettingsForClip?: (clipId: string | null) => SourceAudioTrackSettings;
 	showSourceAudioTrack?: boolean;
@@ -299,6 +305,8 @@ const TimelineCanvasRows = memo(function TimelineCanvasRows({
 	onSelectClip,
 	onSelectAnnotation,
 	onSelectAudio,
+	selectedCaptionRegionId,
+	onSelectCaptionRegion,
 	sourceAudioTracks = [],
 	getSourceAudioTrackSettingsForClip,
 	showSourceAudioTrack = false,
@@ -316,9 +324,10 @@ const TimelineCanvasRows = memo(function TimelineCanvasRows({
 	onZoomRowClick,
 }: TimelineCanvasRowsProps) {
 	const hiddenIds = useMemo(() => new Set(liveHiddenItemIds ?? []), [liveHiddenItemIds]);
-	const { clipItems, zoomItems, annotationRows, audioRows } = useMemo(() => {
+	const { clipItems, zoomItems, annotationRows, audioRows, captionItems } = useMemo(() => {
 		const nextClipItems: TimelineRenderItem[] = [];
 		const nextZoomItems: TimelineRenderItem[] = [];
+		const nextCaptionItems: TimelineRenderItem[] = [];
 		const annotationBuckets = new Map<number, TimelineRenderItem[]>();
 		const audioBuckets = new Map<number, TimelineRenderItem[]>();
 
@@ -343,6 +352,10 @@ const TimelineCanvasRows = memo(function TimelineCanvasRows({
 				const bucket = audioBuckets.get(trackIndex);
 				if (bucket) bucket.push(item);
 				else audioBuckets.set(trackIndex, [item]);
+				continue;
+			}
+			if (isCaptionTrackRowId(item.rowId)) {
+				nextCaptionItems.push(item);
 			}
 		}
 
@@ -364,6 +377,7 @@ const TimelineCanvasRows = memo(function TimelineCanvasRows({
 			zoomItems: nextZoomItems,
 			annotationRows: annotationRowsSorted,
 			audioRows: audioRowsSorted,
+			captionItems: nextCaptionItems,
 		};
 	}, [items]);
 
@@ -519,6 +533,23 @@ const TimelineCanvasRows = memo(function TimelineCanvasRows({
 					))}
 				</Row>
 			))}
+		{captionItems.length > 0 && (
+			<Row id={getCaptionTrackRowId(0)} isEmpty={false}>
+				{captionItems.map((item) => (
+					<Item
+						id={item.id}
+						key={item.id}
+						rowId={item.rowId}
+						span={item.span}
+						isSelected={item.id === selectedCaptionRegionId}
+						onSelectId={onSelectCaptionRegion}
+						variant="caption"
+					>
+						{item.label}
+					</Item>
+				))}
+			</Row>
+		)}
 		</>
 	);
 });
@@ -540,6 +571,8 @@ export default function TimelineCanvas({
 	selectedAudioId,
 	selectAllBlocksActive = false,
 	onClearBlockSelection,
+	selectedCaptionRegionId,
+	onSelectCaptionRegion,
 	keyframes = [],
 	sourceAudioTracks = [],
 	getSourceAudioTrackSettingsForClip,
@@ -575,6 +608,7 @@ export default function TimelineCanvas({
 				onSelectClip?.(null);
 				onSelectAnnotation?.(null);
 				onSelectAudio?.(null);
+				onSelectCaptionRegion?.(null);
 			}
 
 			const rect = e.currentTarget.getBoundingClientRect();
@@ -594,6 +628,7 @@ export default function TimelineCanvas({
 			onSelectClip,
 			onSelectAnnotation,
 			onSelectAudio,
+			onSelectCaptionRegion,
 			onClearBlockSelection,
 			videoDurationMs,
 			sidebarWidth,
@@ -630,6 +665,7 @@ export default function TimelineCanvas({
 				onSelectClip?.(null);
 				onSelectAnnotation?.(null);
 				onSelectAudio?.(null);
+				onSelectCaptionRegion?.(null);
 			}
 
 			const rect = localTimelineRef.current.getBoundingClientRect();
@@ -643,6 +679,7 @@ export default function TimelineCanvas({
 			onSeek,
 			onSelectAnnotation,
 			onSelectAudio,
+			onSelectCaptionRegion,
 			onSelectClip,
 			onSelectZoom,
 			videoDurationMs,
@@ -696,12 +733,14 @@ export default function TimelineCanvas({
 	const timelineRowCount = useMemo(() => {
 		const annotationRowIds = new Set<string>();
 		const audioRowIds = new Set<string>();
+		let hasCaptionRow = false;
 		for (const item of items) {
 			if (isAnnotationTrackRowId(item.rowId)) annotationRowIds.add(item.rowId);
 			if (isAudioTrackRowId(item.rowId)) audioRowIds.add(item.rowId);
+			if (isCaptionTrackRowId(item.rowId)) hasCaptionRow = true;
 		}
 		const sourceAudioRows = showSourceAudioTrack ? sourceAudioTracks.length : 0;
-		return 2 + sourceAudioRows + annotationRowIds.size + audioRowIds.size;
+		return 2 + sourceAudioRows + annotationRowIds.size + audioRowIds.size + (hasCaptionRow ? 1 : 0);
 	}, [items, showSourceAudioTrack, sourceAudioTracks.length]);
 	const timelineContentMinHeightPx = getTimelineContentMinHeightPx(timelineRowCount);
 	const sideProperty = direction === "rtl" ? "right" : "left";
@@ -784,6 +823,8 @@ export default function TimelineCanvas({
 					onSelectClip={onSelectClip}
 					onSelectAnnotation={onSelectAnnotation}
 					onSelectAudio={onSelectAudio}
+					selectedCaptionRegionId={selectedCaptionRegionId}
+					onSelectCaptionRegion={onSelectCaptionRegion}
 					sourceAudioTracks={sourceAudioTracks}
 					getSourceAudioTrackSettingsForClip={getSourceAudioTrackSettingsForClip}
 					showSourceAudioTrack={showSourceAudioTrack}

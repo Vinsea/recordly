@@ -11,6 +11,7 @@ import { fromFileUrl } from "../projectPersistence";
 import type {
 	AnnotationRegion,
 	AudioRegion,
+	CaptionRegion,
 	ClipRegion,
 	CursorTelemetryPoint,
 	SpeedRegion,
@@ -60,6 +61,11 @@ export interface TimelineEditorProps {
 	onAnnotationDelete?: (id: string) => void;
 	selectedAnnotationId?: string | null;
 	onSelectAnnotation?: (id: string | null) => void;
+	captionRegions?: CaptionRegion[];
+	onCaptionRegionSpanChange?: (id: string, span: { start: number; end: number }) => void;
+	onCaptionRegionDelete?: (id: string) => void;
+	selectedCaptionRegionId?: string | null;
+	onSelectCaptionRegion?: (id: string | null) => void;
 	speedRegions?: SpeedRegion[];
 	onSpeedSpanChange?: (id: string, span: Span) => void;
 	audioRegions?: AudioRegion[];
@@ -136,6 +142,11 @@ const TimelineEditor = forwardRef<TimelineEditorHandle, TimelineEditorProps>(
 			onAnnotationDelete,
 			selectedAnnotationId,
 			onSelectAnnotation,
+			captionRegions = [],
+			onCaptionRegionSpanChange,
+			onCaptionRegionDelete,
+			selectedCaptionRegionId,
+			onSelectCaptionRegion,
 			speedRegions = [],
 			onSpeedSpanChange,
 			audioRegions = [],
@@ -356,6 +367,9 @@ const TimelineEditor = forwardRef<TimelineEditorHandle, TimelineEditorProps>(
 			onAnnotationDelete,
 			selectedAnnotationId,
 			onSelectAnnotation,
+			captionRegions,
+			onCaptionRegionSpanChange,
+			onCaptionRegionDelete,
 			speedRegions,
 			onSpeedSpanChange,
 			audioRegions,
@@ -461,6 +475,8 @@ const TimelineEditor = forwardRef<TimelineEditorHandle, TimelineEditorProps>(
 							selectedClipId={selectedClipId}
 							selectedAnnotationId={selectedAnnotationId}
 							selectedAudioId={selectedAudioId}
+							selectedCaptionRegionId={selectedCaptionRegionId}
+							onSelectCaptionRegion={onSelectCaptionRegion}
 							selectAllBlocksActive={selectAllBlocksActive}
 							onClearBlockSelection={clearSelectedBlocks}
 							keyframes={keyframes}
