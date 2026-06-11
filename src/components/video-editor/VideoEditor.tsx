@@ -6249,6 +6249,13 @@ export default function VideoEditor() {
 								}
 								onAnnotationBlurColorChange={handleAnnotationBlurColorChange}
 								onAnnotationDelete={handleAnnotationDelete}
+								captionRegions={captionRegions}
+								selectedCaptionRegionId={selectedCaptionRegionId}
+								onConvertCaptionsToTrack={handleConvertCaptionsToTrack}
+								onCaptionRegionStyleChange={handleCaptionRegionStyleChange}
+								onCaptionRegionTextChange={handleCaptionRegionTextChange}
+								onCaptionRegionDelete={handleCaptionRegionDelete}
+								onApplyCaptionStyleToAll={handleApplyCaptionStyleToAll}
 							/>
 						)}
 					</div>
@@ -6589,6 +6596,11 @@ export default function VideoEditor() {
 						selectedAnnotationId={selectedAnnotationId}
 						onSelectAnnotation={handleSelectAnnotation}
 						showSourceAudioTrack={clipRegions.some((c) => c.showSourceAudio)}
+						captionRegions={captionRegions}
+						onCaptionRegionSpanChange={handleCaptionRegionSpanChange}
+						onCaptionRegionDelete={handleCaptionRegionDelete}
+						selectedCaptionRegionId={selectedCaptionRegionId}
+						onSelectCaptionRegion={handleSelectCaptionRegion}
 						sourceAudioTrackSettings={audio.activeSourceAudioTrackSettings}
 						getSourceAudioTrackSettingsForClip={
 							audio.getSourceAudioTrackSettingsForClip
