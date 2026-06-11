@@ -27,6 +27,7 @@ import {
 	getRenderableVideoUrl,
 	getWallpaperThumbnailUrl,
 } from "@/lib/assetPath";
+import { type CustomFont, getCustomFonts } from "@/lib/customFonts";
 import {
 	TEMPORAL_MOTION_BLUR_DEFAULT_SAMPLE_COUNT,
 	TEMPORAL_MOTION_BLUR_DEFAULT_SHUTTER_FRACTION,
@@ -44,7 +45,8 @@ import { type AspectRatio } from "@/utils/aspectRatioUtils";
 import { useI18n, useScopedT } from "../../contexts/I18nContext";
 import type { AppLocale } from "../../i18n/config";
 import { SUPPORTED_LOCALES } from "../../i18n/config";
-import { AnnotationSettingsPanel } from "./AnnotationSettingsPanel";
+import { AddCustomFontDialog } from "./AddCustomFontDialog";
+import { AnnotationSettingsPanel, FONT_FAMILY_VALUES } from "./AnnotationSettingsPanel";
 import { splitCueAtChar, updateCaptionCuesForEditedTarget } from "./captionEditing";
 import {
 	CURSOR_MOTION_PRESETS,
@@ -178,9 +180,10 @@ function isHexWallpaper(value: string): boolean {
 
 function hexToRgba(hex: string, alpha: number) {
 	const normalized = isHexWallpaper(hex) ? hex : DEFAULT_CURSOR_CLICK_EFFECT_COLOR;
-	const value = normalized.length === 4
-		? `#${normalized[1]}${normalized[1]}${normalized[2]}${normalized[2]}${normalized[3]}${normalized[3]}`
-		: normalized;
+	const value =
+		normalized.length === 4
+			? `#${normalized[1]}${normalized[1]}${normalized[2]}${normalized[2]}${normalized[3]}${normalized[3]}`
+			: normalized;
 	const color = Number.parseInt(value.slice(1), 16);
 	const red = (color >> 16) & 255;
 	const green = (color >> 8) & 255;
@@ -528,8 +531,23 @@ function CursorClickEffectPreview({
 					viewBox="0 0 40 40"
 					aria-hidden="true"
 				>
-					<circle cx="20" cy="20" r="11.5" fill="none" stroke="currentColor" strokeWidth="1.8" opacity="0.75" />
-					<path d="M12.5 27.5 27.5 12.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.2" opacity="0.92" />
+					<circle
+						cx="20"
+						cy="20"
+						r="11.5"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.8"
+						opacity="0.75"
+					/>
+					<path
+						d="M12.5 27.5 27.5 12.5"
+						fill="none"
+						stroke="currentColor"
+						strokeLinecap="round"
+						strokeWidth="2.2"
+						opacity="0.92"
+					/>
 				</svg>
 			) : null}
 			{effect === "ripple" ? (
@@ -570,13 +588,17 @@ function CursorClickEffectPreview({
 					viewBox="0 0 48 48"
 					aria-hidden="true"
 				>
-					<g
-						fill="none"
-						stroke="currentColor"
-					>
+					<g fill="none" stroke="currentColor">
 						<circle cx="24" cy="24" r="9" strokeWidth="1.8" opacity="0.72" />
 						<circle cx="24" cy="24" r="14.5" strokeWidth="1.5" opacity="0.4" />
-						<circle cx="24" cy="24" r="4.25" fill="currentColor" opacity="0.22" stroke="none" />
+						<circle
+							cx="24"
+							cy="24"
+							r="4.25"
+							fill="currentColor"
+							opacity="0.22"
+							stroke="none"
+						/>
 					</g>
 				</svg>
 			) : null}
@@ -659,7 +681,10 @@ function CursorClickEffectCards({
 						>
 							<div className="flex h-full flex-col items-center justify-between gap-3">
 								<div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-[8px] px-2 py-1.5">
-									<CursorClickEffectPreview effect={effect.id} color={effectColor} />
+									<CursorClickEffectPreview
+										effect={effect.id}
+										color={effectColor}
+									/>
 								</div>
 							</div>
 						</ToggleGroupItem>
@@ -1258,6 +1283,7 @@ export function SettingsPanel({
 	onOpenNativeCaptureUnavailableModal,
 }: SettingsPanelProps) {
 	const tSettings = useScopedT("settings");
+	const tEditor = useScopedT("editor");
 	const { locale, setLocale, t } = useI18n();
 	const { preference: themePreference, setPreference: setThemePreference } = useTheme();
 	const isBackgroundPanel = panelMode === "background";
@@ -1288,6 +1314,14 @@ export function SettingsPanel({
 		[extensionWallpapers],
 	);
 	const captionCueCount = autoCaptions.length;
+	const [captionCustomFonts, setCaptionCustomFonts] = useState<CustomFont[]>([]);
+	useEffect(() => {
+		setCaptionCustomFonts(getCustomFonts());
+	}, []);
+	const fontFamilies = useMemo(
+		() => FONT_FAMILY_VALUES.map((f) => ({ value: f.value, label: tEditor(f.labelKey) })),
+		[tEditor],
+	);
 	const updateAutoCaptionSettings = (partial: Partial<AutoCaptionSettings>) => {
 		onAutoCaptionSettingsChange?.({
 			...autoCaptionSettings,
@@ -2767,6 +2801,55 @@ export function SettingsPanel({
 					formatValue={(value) => `${Math.round(value)}px`}
 					parseInput={(text) => parseFloat(text.replace(/px$/, ""))}
 				/>
+				{/* Font family */}
+				<div>
+					<label className="text-xs font-medium text-foreground mb-2 block">
+						{tSettings("captions.fontFamily", "Font")}
+					</label>
+					<Select
+						value={autoCaptionSettings.fontFamily}
+						onValueChange={(value) => updateAutoCaptionSettings({ fontFamily: value })}
+					>
+						<SelectTrigger className="w-full bg-foreground/5 border-foreground/10 text-foreground h-9 text-xs">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent className="bg-editor-surface-alt border-foreground/10 text-foreground max-h-[300px]">
+							{fontFamilies.map((font) => (
+								<SelectItem
+									key={font.value}
+									value={font.value}
+									style={{ fontFamily: font.value }}
+								>
+									{font.label}
+								</SelectItem>
+							))}
+							{captionCustomFonts.length > 0 && (
+								<>
+									<div className="px-2 py-1 text-xs text-foreground/50">
+										Custom Fonts
+									</div>
+									{captionCustomFonts.map((font) => (
+										<SelectItem
+											key={font.id}
+											value={font.fontFamily}
+											style={{ fontFamily: font.fontFamily }}
+										>
+											{font.name}
+										</SelectItem>
+									))}
+								</>
+							)}
+						</SelectContent>
+					</Select>
+					<div className="mt-2">
+						<AddCustomFontDialog
+							onFontAdded={(font) => {
+								setCaptionCustomFonts(getCustomFonts());
+								updateAutoCaptionSettings({ fontFamily: font.fontFamily });
+							}}
+						/>
+					</div>
+				</div>
 				<SliderControl
 					label={tSettings("captions.rowCount", "Rows")}
 					value={autoCaptionSettings.maxRows}
@@ -2785,8 +2868,14 @@ export function SettingsPanel({
 					min={0}
 					max={80}
 					step={1}
-					onChange={(value) => updateAutoCaptionSettings({ maxCharsPerLine: Math.round(value) })}
-					formatValue={(value) => Math.round(value) === 0 ? tSettings("captions.maxCharsOff", "Off") : `${Math.round(value)}`}
+					onChange={(value) =>
+						updateAutoCaptionSettings({ maxCharsPerLine: Math.round(value) })
+					}
+					formatValue={(value) =>
+						Math.round(value) === 0
+							? tSettings("captions.maxCharsOff", "Off")
+							: `${Math.round(value)}`
+					}
 					parseInput={(text) => parseFloat(text)}
 				/>
 				<SliderControl
@@ -2843,7 +2932,9 @@ export function SettingsPanel({
 					max={8}
 					step={0.5}
 					onChange={(value) => updateAutoCaptionSettings({ textStrokeWidth: value })}
-					formatValue={(value) => value === 0 ? tSettings("captions.maxCharsOff", "Off") : `${value}px`}
+					formatValue={(value) =>
+						value === 0 ? tSettings("captions.maxCharsOff", "Off") : `${value}px`
+					}
 					parseInput={(text) => parseFloat(text.replace(/px$/, ""))}
 				/>
 				{(autoCaptionSettings.textStrokeWidth ?? 0) > 0 && (
@@ -2868,69 +2959,87 @@ export function SettingsPanel({
 							{tSettings("captions.editCues", "Edit Captions")}
 						</div>
 						<div className="flex max-h-64 flex-col gap-1 overflow-y-auto">
-						{autoCaptions.map((cue) => {
+							{autoCaptions.map((cue) => {
 								let textareaRef: HTMLTextAreaElement | null = null;
 								return (
-								<div key={cue.id} className="flex flex-col gap-0.5">
-									<div className="text-[9px] text-muted-foreground">
-										{`${Math.floor(cue.startMs / 1000 / 60).toString().padStart(2, "0")}:${(Math.floor(cue.startMs / 1000) % 60).toString().padStart(2, "0")}.${(Math.floor(cue.startMs / 10) % 100).toString().padStart(2, "0")}`}
+									<div key={cue.id} className="flex flex-col gap-0.5">
+										<div className="text-[9px] text-muted-foreground">
+											{`${Math.floor(cue.startMs / 1000 / 60)
+												.toString()
+												.padStart(
+													2,
+													"0",
+												)}:${(Math.floor(cue.startMs / 1000) % 60).toString().padStart(2, "0")}.${(Math.floor(cue.startMs / 10) % 100).toString().padStart(2, "0")}`}
+										</div>
+										<div className="flex gap-1">
+											<textarea
+												ref={(el) => {
+													textareaRef = el;
+												}}
+												className="flex-1 resize-none rounded-md border border-foreground/10 bg-foreground/5 px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-blue-500"
+												rows={2}
+												defaultValue={
+													cue.words
+														? cue.words.map((w) => w.text).join(" ")
+														: cue.text
+												}
+												onBlur={(e) => {
+													const newText = e.currentTarget.value.trim();
+													if (!newText) return;
+													const target = {
+														id: cue.id,
+														startMs: cue.startMs,
+														endMs: cue.endMs,
+														text: cue.text,
+														words: cue.words
+															? cue.words.map((w, i) => ({
+																	cueId: cue.id,
+																	cueWordIndex: i,
+																	text: w.text,
+																	startMs:
+																		w.startMs ?? cue.startMs,
+																	endMs: w.endMs ?? cue.endMs,
+																	leadingSpace: i > 0,
+																}))
+															: [
+																	{
+																		cueId: cue.id,
+																		cueWordIndex: 0,
+																		text: cue.text,
+																		startMs: cue.startMs,
+																		endMs: cue.endMs,
+																		leadingSpace: false,
+																	},
+																],
+													};
+													const updated =
+														updateCaptionCuesForEditedTarget(
+															autoCaptions,
+															target,
+															newText,
+														);
+													onAutoCaptionsChange?.(updated);
+												}}
+											/>
+											<button
+												type="button"
+												title="在光标处拆分字幕"
+												className="shrink-0 self-start mt-1 rounded px-1.5 py-1 text-xs text-muted-foreground hover:bg-foreground/10 hover:text-foreground transition-colors"
+												onClick={() => {
+													const charOffset =
+														textareaRef?.selectionStart ?? 0;
+													const result = splitCueAtChar(
+														autoCaptions,
+														cue.id,
+														charOffset,
+													);
+													if (result) onAutoCaptionsChange?.(result);
+												}}
+											>
+												✂
+											</button>
+										</div>
 									</div>
-									<div className="flex gap-1">
-									<textarea
-										ref={(el) => { textareaRef = el; }}
-										className="flex-1 resize-none rounded-md border border-foreground/10 bg-foreground/5 px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-blue-500"
-										rows={2}
-										defaultValue={cue.words ? cue.words.map((w) => w.text).join(" ") : cue.text}
-										onBlur={(e) => {
-											const newText = e.currentTarget.value.trim();
-											if (!newText) return;
-											const target = {
-												id: cue.id,
-												startMs: cue.startMs,
-												endMs: cue.endMs,
-												text: cue.text,
-												words: cue.words
-													? cue.words.map((w, i) => ({
-															cueId: cue.id,
-															cueWordIndex: i,
-															text: w.text,
-															startMs: w.startMs ?? cue.startMs,
-															endMs: w.endMs ?? cue.endMs,
-															leadingSpace: i > 0,
-														}))
-													: [
-															{
-																cueId: cue.id,
-																cueWordIndex: 0,
-																text: cue.text,
-																startMs: cue.startMs,
-																endMs: cue.endMs,
-																leadingSpace: false,
-															},
-														],
-											};
-											const updated = updateCaptionCuesForEditedTarget(
-												autoCaptions,
-												target,
-												newText,
-											);
-											onAutoCaptionsChange?.(updated);
-										}}
-									/>
-									<button
-										type="button"
-										title="在光标处拆分字幕"
-										className="shrink-0 self-start mt-1 rounded px-1.5 py-1 text-xs text-muted-foreground hover:bg-foreground/10 hover:text-foreground transition-colors"
-										onClick={() => {
-											const charOffset = textareaRef?.selectionStart ?? 0;
-											const result = splitCueAtChar(autoCaptions, cue.id, charOffset);
-											if (result) onAutoCaptionsChange?.(result);
-										}}
-									>
-										✂
-									</button>
-									</div>
-								</div>
 								);
 							})}
 						</div>
@@ -3823,12 +3932,15 @@ export function SettingsPanel({
 										<div className="flex flex-wrap gap-1.5">
 											{CLICK_EFFECT_COLOR_OPTIONS.map((color) => {
 												const isSelected =
-													cursorClickEffectColor.toLowerCase() === color.toLowerCase();
+													cursorClickEffectColor.toLowerCase() ===
+													color.toLowerCase();
 												return (
 													<button
 														key={color}
 														type="button"
-														onClick={() => onCursorClickEffectColorChange?.(color)}
+														onClick={() =>
+															onCursorClickEffectColorChange?.(color)
+														}
 														className={cn(
 															"h-6 w-6 rounded-[8px] border transition-transform hover:scale-[1.04]",
 															isSelected
@@ -3842,7 +3954,9 @@ export function SettingsPanel({
 											})}
 											<button
 												type="button"
-												onClick={() => cursorClickEffectColorInputRef.current?.click()}
+												onClick={() =>
+													cursorClickEffectColorInputRef.current?.click()
+												}
 												className="relative h-6 w-10 overflow-hidden rounded-[8px] border border-foreground/10 text-[8px] font-semibold uppercase tracking-[0.18em] text-foreground"
 												style={{
 													background: `linear-gradient(135deg, ${cursorClickEffectColor} 0%, ${cursorClickEffectColor} 58%, rgba(255,255,255,0.92) 58%, rgba(255,255,255,0.92) 100%)`,
