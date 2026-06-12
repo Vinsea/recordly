@@ -42,6 +42,7 @@
 		"smoke:packaged-binaries": "node scripts/smoke-packaged-binaries.mjs",
 		"checksums:release": "node scripts/write-release-checksums.mjs",
 		"release:create": "node scripts/create-release.mjs",
+		"compress": "node scripts/compress-videos.mjs",
 		"test": "vitest --run",
 		"test:watch": "vitest"
 	},

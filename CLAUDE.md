@@ -33,11 +33,12 @@ npm run i18n:check             # 验证所有翻译文件是否完整
 Recordly 是一个 **Electron 桌面应用**（屏幕录制 + 视频编辑器），使用 React 18 + Vite 作为渲染层，并通过 Swift（macOS）和 C++/CUDA（Windows）原生助手实现录制和 GPU 加速导出。
 
 详细技术文档见 `docs/` 目录：
-- [整体架构](docs/architecture-overview.md)
-- [IPC 通信机制](docs/ipc-communication.md)
-- [视频编辑器状态管理](docs/video-editor-state.md)
-- [导出流水线](docs/export-pipeline.md)
-- [录制后端](docs/recording-backends.md)
+- [整体架构](docs/01-整体架构.md)
+- [IPC 通信机制](docs/02-IPC通信机制.md)
+- [视频编辑器状态管理](docs/03-视频编辑器状态管理.md)
+- [导出流水线](docs/04-导出流水线.md)
+- [录制后端](docs/05-录制后端.md)
+- [视频压缩工具](docs/08-视频压缩工具.md)
 
 ### 进程分离
 
