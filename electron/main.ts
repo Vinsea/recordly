@@ -912,7 +912,7 @@ app.on("second-instance", (_event, argv) => {
 
 function extractRecordlyFileFromArgv(argv: string[]): string | null {
 	// On Windows, the file path is passed as a CLI argument
-	const arg = argv.find((a) => a.endsWith(".recordly") || a.endsWith(".openscreen"));
+	const arg = argv.find((a) => a.endsWith(".vecord") || a.endsWith(".recordly") || a.endsWith(".openscreen"));
 	return arg ?? null;
 }
 

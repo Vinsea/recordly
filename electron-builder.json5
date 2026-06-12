@@ -48,6 +48,12 @@
       "name": "Vecord 项目",
       "description": "Vecord 项目文件",
       "role": "Editor"
+    },
+    {
+      "ext": "recordly",
+      "name": "Vecord 项目",
+      "description": "Vecord 项目文件（旧版）",
+      "role": "Editor"
     }
   ],
   "publish": [
