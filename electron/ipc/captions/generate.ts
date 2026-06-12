@@ -72,7 +72,7 @@ export async function resolveWhisperExecutablePath(preferredPath?: string | null
 	}
 
 	throw new Error(
-		"No Whisper runtime was found. Recordly looked for a bundled binary first, then checked common system install locations.",
+		"未找到 Whisper 运行时。Vecord 已检查内置二进制文件及常见系统安装路径，均未找到。",
 	);
 }
 

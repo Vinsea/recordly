@@ -696,7 +696,7 @@ export function registerRecordingHandlers(
 					return {
 						success: false,
 						message:
-							"Cannot record Recordly windows. Please select another app window.",
+							"无法录制 Vecord 自身窗口，请选择其他应用窗口。",
 					};
 				}
 
@@ -803,11 +803,11 @@ export function registerRecordingHandlers(
 				) {
 					const { response } = await dialog.showMessageBox({
 						type: "warning",
-						title: "Screen Recording Permission Required",
+						title: "需要屏幕录制权限",
 						message:
-							"Recordly needs screen recording permission to capture your screen.",
-						detail: "Please open System Settings > Privacy & Security > Screen Recording, make sure Recordly is toggled ON, then try recording again.",
-						buttons: ["Open System Settings", "Cancel"],
+							"Vecord 需要屏幕录制权限才能捕获屏幕。",
+						detail: "请前往「系统设置 > 隐私与安全性 > 屏幕录制」，确保 Vecord 已开启，然后重试。",
+						buttons: ["打开系统设置", "取消"],
 						defaultId: 0,
 						cancelId: 1,
 					});
@@ -837,10 +837,10 @@ export function registerRecordingHandlers(
 				if (errorStr.includes("MICROPHONE_PERMISSION_DENIED")) {
 					const { response } = await dialog.showMessageBox({
 						type: "warning",
-						title: "Microphone Permission Required",
-						message: "Recordly needs microphone permission to record audio.",
-						detail: "Please open System Settings > Privacy & Security > Microphone, make sure Recordly is toggled ON, then try recording again.",
-						buttons: ["Open System Settings", "Cancel"],
+						title: "需要麦克风权限",
+						message: "Vecord 需要麦克风权限才能录制音频。",
+						detail: "请前往「系统设置 > 隐私与安全性 > 麦克风」，确保 Vecord 已开启，然后重试。",
+						buttons: ["打开系统设置", "取消"],
 						defaultId: 0,
 						cancelId: 1,
 					});

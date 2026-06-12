@@ -45,8 +45,8 @@
   "fileAssociations": [
     {
       "ext": "vecord",
-      "name": "Vecord Project",
-      "description": "Vecord Project File",
+      "name": "Vecord 项目",
+      "description": "Vecord 项目文件",
       "role": "Editor"
     }
   ],

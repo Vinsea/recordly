@@ -212,10 +212,10 @@ function createDownloadingUpdateToastPayload(
 		phase: "downloading",
 		detail:
 			normalizedProgress >= 100
-				? "Finishing the update download. Recordly will restart as soon as the installer is ready."
+				? "更新下载即将完成，安装包准备好后 Vecord 将自动重启。"
 				: remainingMb !== null
-					? `${remainingMb.toFixed(1)} MB left before Recordly restarts.`
-					: "Downloading the update now. Recordly will restart when it finishes.",
+					? `还需下载 ${remainingMb.toFixed(1)} MB，完成后 Vecord 将自动重启。`
+					: "正在下载更新，下载完成后 Vecord 将自动重启。",
 		delayMs: UPDATE_REMINDER_DELAY_MS,
 		progressPercent: normalizedProgress,
 		transferredBytes,
@@ -230,7 +230,7 @@ function createDownloadedUpdateToastPayload(version: string): UpdateToastPayload
 	return {
 		version,
 		phase: "ready",
-		detail: "The update is ready. Install and restart now, or remind yourself later.",
+		detail: "更新已就绪，立即安装并重启，或稍后提醒。",
 		delayMs: UPDATE_REMINDER_DELAY_MS,
 		primaryAction: "install-and-restart",
 	};
@@ -240,7 +240,7 @@ function createUpdateErrorToastPayload(version: string, error: unknown): UpdateT
 	return {
 		version,
 		phase: "error",
-		detail: `The update could not be downloaded. ${String(error)}`,
+		detail: `更新下载失败。${String(error)}`,
 		delayMs: UPDATE_REMINDER_DELAY_MS,
 		primaryAction: "install-and-restart",
 	};
@@ -412,7 +412,7 @@ export async function downloadAvailableUpdate(
 	setUpdateStatusSummary({
 		status: "downloading",
 		availableVersion,
-		detail: `Downloading Recordly ${availableVersion}`,
+		detail: `正在下载 Vecord ${availableVersion}`,
 	});
 	emitUpdateToastState(
 		sendToRenderer,
@@ -523,10 +523,10 @@ async function showAvailableUpdateDialog(
 ) {
 	const result = await showMessageBox(getMainWindow, {
 		type: "info",
-		title: "Update Available",
-		message: `Recordly ${version} is available.`,
-		detail: "Install and restart now, or remind me later.",
-		buttons: ["Install & Restart", "Later"],
+		title: "有可用更新",
+		message: `Vecord ${version} 已可用。`,
+		detail: "立即安装并重启，或稍后提醒。",
+		buttons: ["安装并重启", "稍后提醒"],
 		defaultId: 0,
 		cancelId: 1,
 		noLink: true,
@@ -548,14 +548,14 @@ async function showDownloadedUpdateDialog(
 	const isPreview = Boolean(options?.isPreview);
 	const result = await showMessageBox(getMainWindow, {
 		type: "info",
-		title: "Update Ready",
+		title: "更新已就绪",
 		message: isPreview
-			? `Recordly ${version} is ready to install.`
-			: `Recordly ${version} has been downloaded.`,
+			? `Vecord ${version} 已可安装。`
+			: `Vecord ${version} 已下载完成。`,
 		detail: isPreview
-			? "Development preview of the native update prompt. No real update will be installed."
-			: "Install and restart now, or remind me later.",
-		buttons: ["Install & Restart", "Later"],
+			? "这是原生更新提示的开发预览，不会安装真实更新。"
+			: "立即安装并重启，或稍后提醒。",
+		buttons: ["安装并重启", "稍后提醒"],
 		defaultId: 0,
 		cancelId: 1,
 		noLink: true,
@@ -674,7 +674,7 @@ export function setupAutoUpdates(
 		setUpdateStatusSummary({
 			status: "available",
 			availableVersion: info.version,
-			detail: `Recordly ${info.version} is available.`,
+			detail: `Vecord ${info.version} 已可用。`,
 		});
 		if (skippedVersion === info.version) {
 			manualCheckRequested = false;
@@ -704,7 +704,7 @@ export function setupAutoUpdates(
 		setUpdateStatusSummary({
 			status: "up-to-date",
 			availableVersion: null,
-			detail: `Recordly ${app.getVersion()} is up to date.`,
+			detail: `Vecord ${app.getVersion()} 已是最新版本。`,
 		});
 		clearVisibleUpdateToast(sendToRenderer);
 		manualCheckRequested = false;
@@ -719,7 +719,7 @@ export function setupAutoUpdates(
 		setUpdateStatusSummary({
 			status: "downloading",
 			availableVersion,
-			detail: `Downloading Recordly ${availableVersion}`,
+			detail: `正在下载 Vecord ${availableVersion}`,
 		});
 		writeUpdaterLog(
 			`Download progress for ${availableVersion}: ${progress.percent.toFixed(1)}%`,
@@ -775,7 +775,7 @@ export function setupAutoUpdates(
 		setUpdateStatusSummary({
 			status: "ready",
 			availableVersion: info.version,
-			detail: `Recordly ${info.version} is ready to install.`,
+			detail: `Vecord ${info.version} 已就绪，可以安装。`,
 		});
 		clearDeferredReminderTimer();
 

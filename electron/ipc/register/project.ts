@@ -313,10 +313,10 @@ export function registerProjectHandlers() {
       const defaultName = `${safeName}.${PROJECT_FILE_EXTENSION}`
 
       const result = await dialog.showSaveDialog({
-        title: 'Save Recordly Project',
+        title: '保存 Vecord 项目',
         defaultPath: path.join(projectsDir, defaultName),
         filters: [
-          { name: 'Recordly Project', extensions: [PROJECT_FILE_EXTENSION] },
+          { name: 'Vecord 项目', extensions: [PROJECT_FILE_EXTENSION] },
           { name: 'JSON', extensions: ['json'] }
         ],
         properties: ['createDirectory', 'showOverwriteConfirmation']
@@ -432,12 +432,12 @@ export function registerProjectHandlers() {
     try {
       const projectsDir = await getProjectsDir()
       const result = await dialog.showOpenDialog({
-        title: 'Open Recordly Project',
+        title: '打开 Vecord 项目',
         defaultPath: projectsDir,
         filters: [
-          { name: 'Recordly Project', extensions: [PROJECT_FILE_EXTENSION, ...LEGACY_PROJECT_FILE_EXTENSIONS] },
+          { name: 'Vecord 项目', extensions: [PROJECT_FILE_EXTENSION, ...LEGACY_PROJECT_FILE_EXTENSIONS] },
           { name: 'JSON', extensions: ['json'] },
-          { name: 'All Files', extensions: ['*'] }
+          { name: '所有文件', extensions: ['*'] }
         ],
         properties: ['openFile']
       })
