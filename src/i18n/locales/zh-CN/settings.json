@@ -223,12 +223,36 @@
 			"high": "高",
 			"original": "原始"
 		},
+		"encodingTitle": "编码",
+		"encoding": {
+			"fast": "快速",
+			"balanced": "均衡",
+			"quality": "高质量"
+		},
 		"fpsTitle": "帧率",
 		"loop": "循环",
 		"outputDimensions": "输出：{{dimensions}}px",
 		"sizePresetOriginalShort": "原",
 		"sizePresetMediumShort": "中",
 		"sizePresetLargeShort": "大",
+		"pipelineTitle": "渲染引擎",
+		"pipeline": {
+			"legacy": "经典",
+			"modern": "闪电（测试版）",
+			"legacyHint": "经典模式使用当前稳定的 WebCodecs 导出路径。",
+			"lightningHint": "闪电模式（测试版）自动选用最快的兼容后端，并在需要时自动回退。"
+		},
+		"nvidiaCuda": {
+			"title": "NVIDIA CUDA",
+			"badge": "实验性",
+			"hint": "在此 Windows 设备上尝试 GPU 导出。",
+			"toggle": "启用实验性 NVIDIA CUDA 导出"
+		},
+		"captionSidecar": {
+			"title": "导出字幕文件",
+			"hint": "将 .srt 和 .vtt 文件保存到导出视频旁边。",
+			"toggle": "导出字幕附加文件"
+		},
 		"loadProject": "加载项目",
 		"saveProject": "保存项目",
 		"exportVideo": "导出{{format}}",

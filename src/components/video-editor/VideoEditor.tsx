@@ -537,7 +537,7 @@ export default function VideoEditor() {
 	const [captionRegions, setCaptionRegions] = useState<CaptionRegion[]>([]);
 	const [selectedCaptionRegionId, setSelectedCaptionRegionId] = useState<string | null>(null);
 	const nextCaptionIdRef = useRef(0);
-	const [includeCaptionSidecar, setIncludeCaptionSidecar] = useState(true);
+	const [includeCaptionSidecar, setIncludeCaptionSidecar] = useState(false);
 	const [timelineHeight, setTimelineHeight] = useState(240);
 	const [whisperExecutablePath, setWhisperExecutablePath] = useState<string | null>(
 		initialEditorPreferences.whisperExecutablePath,
