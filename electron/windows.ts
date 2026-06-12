@@ -852,7 +852,7 @@ export function createEditorWindow(): BrowserWindow {
 		resizable: true,
 		alwaysOnTop: false,
 		skipTaskbar: false,
-		title: "Recordly",
+		title: "Vecord",
 		show: false,
 		backgroundColor: "#000000",
 		webPreferences: {
