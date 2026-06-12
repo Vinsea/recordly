@@ -1771,7 +1771,7 @@ export class ModernVideoExporter {
 				(part) =>
 					part.match(/^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)|[a-z]+)/i)?.[1],
 			)
-			.filter((color): color is string => Boolean(color));
+			.filter((color): color is string => color !== undefined && !/^(to|circle|ellipse|at|farthest|closest|corner|side)$/i.test(color));
 		if (colorStops.length === 0) {
 			return null;
 		}

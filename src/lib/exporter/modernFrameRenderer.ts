@@ -399,6 +399,20 @@ function areNearlyEqual(first: number, second: number, epsilon = 0.01): boolean 
 	return Math.abs(first - second) <= epsilon;
 }
 
+function splitCssGradientArgs(params: string): string[] {
+	const parts: string[] = [];
+	let current = "";
+	let depth = 0;
+	for (const char of params) {
+		if (char === "(") { depth++; current += char; continue; }
+		if (char === ")") { depth = Math.max(0, depth - 1); current += char; continue; }
+		if (char === "," && depth === 0) { if (current.trim()) parts.push(current.trim()); current = ""; continue; }
+		current += char;
+	}
+	if (current.trim()) parts.push(current.trim());
+	return parts;
+}
+
 // Renders video frames with all effects directly into a GPU-backed Pixi scene for export.
 export class FrameRenderer {
 	private app: Application | null = null;
@@ -1263,7 +1277,11 @@ export class FrameRenderer {
 					bgCtx.fillRect(0, 0, this.config.width, this.config.height);
 				} else {
 					const [, type, params] = gradientMatch;
-					const parts = params.split(",").map((value) => value.trim());
+					const parts = splitCssGradientArgs(params).map((value) => value.trim());
+					const colorStops = parts
+						.map((part) => part.match(/^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)|[a-z]+)/i)?.[1])
+						.filter((c): c is string => c !== undefined && !/^(to|circle|ellipse|at|farthest|closest|corner|side)$/i.test(c));
+
 					const gradient =
 						type === "linear"
 							? bgCtx.createLinearGradient(0, 0, 0, this.config.height)
@@ -1276,19 +1294,14 @@ export class FrameRenderer {
 									Math.max(this.config.width, this.config.height) / 2,
 								);
 
-					parts.forEach((part, index) => {
-						if (type === "linear" && (part.startsWith("to ") || part.includes("deg"))) {
-							return;
-						}
-
-						const colorMatch = part.match(/^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|[a-z]+)/);
-						if (!colorMatch) {
-							return;
-						}
-
-						const position = index / Math.max(parts.length - 1, 1);
-						gradient.addColorStop(position, colorMatch[1]);
-					});
+					if (colorStops.length === 1) {
+						gradient.addColorStop(0, colorStops[0]);
+						gradient.addColorStop(1, colorStops[0]);
+					} else {
+						colorStops.forEach((color, i) => {
+							gradient.addColorStop(i / Math.max(colorStops.length - 1, 1), color);
+						});
+					}
 
 					bgCtx.fillStyle = gradient;
 					bgCtx.fillRect(0, 0, this.config.width, this.config.height);

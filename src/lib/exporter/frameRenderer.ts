@@ -259,6 +259,20 @@ function configureHighQuality2DContext(
 	return context;
 }
 
+function splitCssGradientArgs(params: string): string[] {
+	const parts: string[] = [];
+	let current = "";
+	let depth = 0;
+	for (const char of params) {
+		if (char === "(") { depth++; current += char; continue; }
+		if (char === ")") { depth = Math.max(0, depth - 1); current += char; continue; }
+		if (char === "," && depth === 0) { if (current.trim()) parts.push(current.trim()); current = ""; continue; }
+		current += char;
+	}
+	if (current.trim()) parts.push(current.trim());
+	return parts;
+}
+
 // Renders video frames with all effects (background, zoom, crop, blur, shadow) to an offscreen canvas for export.
 
 export class FrameRenderer {
@@ -671,39 +685,28 @@ export class FrameRenderer {
 				const gradientMatch = wallpaper.match(/(linear|radial)-gradient\((.+)\)/);
 				if (gradientMatch) {
 					const [, type, params] = gradientMatch;
-					const parts = params.split(",").map((s) => s.trim());
+					const parts = splitCssGradientArgs(params);
+					const colorStops = parts
+						.map((part) => part.trim().match(/^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)|[a-z]+)/i)?.[1])
+						.filter((c): c is string => c !== undefined && !/^(to|circle|ellipse|at|farthest|closest|corner|side)$/i.test(c));
 
 					let gradient: CanvasGradient;
 
 					if (type === "linear") {
 						gradient = bgCtx.createLinearGradient(0, 0, 0, this.config.height);
-						parts.forEach((part, index) => {
-							if (part.startsWith("to ") || part.includes("deg")) return;
-
-							const colorMatch = part.match(
-								/^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|[a-z]+)/,
-							);
-							if (colorMatch) {
-								const color = colorMatch[1];
-								const position = index / (parts.length - 1);
-								gradient.addColorStop(position, color);
-							}
-						});
 					} else {
 						const cx = this.config.width / 2;
 						const cy = this.config.height / 2;
 						const radius = Math.max(this.config.width, this.config.height) / 2;
 						gradient = bgCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+					}
 
-						parts.forEach((part, index) => {
-							const colorMatch = part.match(
-								/^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|[a-z]+)/,
-							);
-							if (colorMatch) {
-								const color = colorMatch[1];
-								const position = index / (parts.length - 1);
-								gradient.addColorStop(position, color);
-							}
+					if (colorStops.length === 1) {
+						gradient.addColorStop(0, colorStops[0]);
+						gradient.addColorStop(1, colorStops[0]);
+					} else if (colorStops.length > 1) {
+						colorStops.forEach((color, i) => {
+							gradient.addColorStop(i / Math.max(colorStops.length - 1, 1), color);
 						});
 					}
 

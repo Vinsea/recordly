@@ -9,6 +9,7 @@ import type {
 	CursorStyle,
 	CursorTelemetryPoint,
 	Padding,
+
 	SourceAudioTrackSettings,
 	SpeedRegion,
 	TrimRegion,
@@ -76,6 +77,7 @@ interface VideoExporterConfig extends ExportConfig {
 	autoCaptions?: CaptionCue[];
 	autoCaptionSettings?: AutoCaptionSettings;
 	captionRegions?: CaptionRegion[];
+	cursorTelemetry?: CursorTelemetryPoint[];
 	showCursor?: boolean;
 	cursorStyle?: CursorStyle;
 	cursorSize?: number;
