@@ -9,12 +9,15 @@ import VideoEditor from "./components/video-editor/VideoEditor";
 import { useI18n } from "./contexts/I18nContext";
 import { ShortcutsProvider } from "./contexts/ShortcutsContext";
 import { loadAllCustomFonts } from "./lib/customFonts";
+import { parseWebAppRoute } from "./pages/routeState";
+import { WebViewerPage } from "./pages/web-viewer/WebViewerPage";
 
 export default function App() {
 	const [windowType, setWindowType] = useState("");
 	const { t } = useI18n();
 	const isMacOS = /mac/i.test(navigator.platform);
 	const appIconSrc = "/app-icons/recordly-128.png";
+	const webRoute = typeof window !== "undefined" ? parseWebAppRoute(window.location.search) : null;
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -56,7 +59,11 @@ export default function App() {
 				: t("app.name", "Recordly");
 	}, [windowType, t]);
 
-	switch (windowType) {
+	if (!windowType && webRoute === "viewer") {
+		return <WebViewerPage />;
+	}
+
+switch (windowType) {
 		case "hud-overlay":
 			return (
 				<>
