@@ -1,7 +1,7 @@
 {
 	"name": "vecord",
 	"productName": "Vecord",
-	"description": "A free, creator-focused screen recorder with auto-zoom, cursor effects, backgrounds, annotations, and more - built for polished videos out of the box.",
+	"description": "免费、面向创作者的屏幕录制工具，内置自动缩放、光标特效、背景、标注等功能，开箱即得精致视频。",
 	"author": "Vinsea",
 	"homepage": "https://github.com/Vinsea/recordly",
 	"repository": {
